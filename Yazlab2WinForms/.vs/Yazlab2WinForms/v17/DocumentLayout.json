@@ -3,16 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\yazlab2winforms\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\node.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\node.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\edge.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\edge.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|c:\\users\\user\\desktop\\yazlab2\\yazlab2\\yazlab2winforms\\yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB4ABB8A-1026-422C-AE15-4822F1D6AD3B}|Yazlab2WinForms\\Yazlab2WinForms.csproj|solutionrelative:yazlab2winforms\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,20 +34,59 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 5,
               "Title": "Form1.cs",
               "DocumentMoniker": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Form1.cs",
               "RelativeDocumentMoniker": "Yazlab2WinForms\\Form1.cs",
               "ToolTip": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Form1.cs",
               "RelativeToolTip": "Yazlab2WinForms\\Form1.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAABAAAA",
+              "ViewState": "AQIAAA0AAAAAAAAAAAAzwLYAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-27T17:38:09.668Z",
               "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Graph.cs",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Graph.cs",
+              "RelativeDocumentMoniker": "Yazlab2WinForms\\Graph.cs",
+              "ToolTip": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Graph.cs",
+              "RelativeToolTip": "Yazlab2WinForms\\Graph.cs",
+              "ViewState": "AQIAAC8AAAAAAAAAAAAqwFMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-27T18:42:57.359Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Edge.cs",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Edge.cs",
+              "RelativeDocumentMoniker": "Yazlab2WinForms\\Edge.cs",
+              "ToolTip": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Edge.cs",
+              "RelativeToolTip": "Yazlab2WinForms\\Edge.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-27T18:42:18.883Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Node.cs",
+              "DocumentMoniker": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Node.cs",
+              "RelativeDocumentMoniker": "Yazlab2WinForms\\Node.cs",
+              "ToolTip": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Node.cs",
+              "RelativeToolTip": "Yazlab2WinForms\\Node.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-27T18:41:54.072Z",
               "EditorCaption": ""
             },
             {
@@ -46,14 +97,14 @@
               "RelativeDocumentMoniker": "Yazlab2WinForms\\Form1.Designer.cs",
               "ToolTip": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Form1.Designer.cs",
               "RelativeToolTip": "Yazlab2WinForms\\Form1.Designer.cs",
-              "ViewState": "AQIAAFEAAAAAAAAAAAAqwHkAAAAAAAAA",
+              "ViewState": "AQIAAEgAAAAAAAAAAAAawGoAAAAwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-27T17:49:01.187Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "Form1.cs [Tasar\u0131m]",
               "DocumentMoniker": "C:\\Users\\user\\Desktop\\Yazlab2\\Yazlab2\\Yazlab2WinForms\\Yazlab2WinForms\\Form1.cs",
               "RelativeDocumentMoniker": "Yazlab2WinForms\\Form1.cs",
