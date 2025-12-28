@@ -8,3 +8,14 @@ C:\Users\user\Desktop\Yazlab2\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\
 C:\Users\user\Desktop\Yazlab2\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.csproj.CoreCompileInputs.cache
 C:\Users\user\Desktop\Yazlab2\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.exe
 C:\Users\user\Desktop\Yazlab2\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.pdb
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\bin\Debug\Yazlab2WinForms.exe.config
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\bin\Debug\Yazlab2WinForms.exe
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\bin\Debug\Yazlab2WinForms.pdb
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.csproj.AssemblyReference.cache
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.exe.config
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.Form1.resources
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.Properties.Resources.resources
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.csproj.GenerateResource.cache
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.csproj.CoreCompileInputs.cache
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.exe
+C:\Yazlab2\Yazlab2WinForms\Yazlab2WinForms\obj\Debug\Yazlab2WinForms.pdb

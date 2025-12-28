@@ -46,15 +46,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Edge.cs" />
+    <Compile Include="Business\Concrete\GraphManager.cs" />
+    <Compile Include="DataAccess\GraphData.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Graph.cs" />
-    <Compile Include="Node.cs" />
+    <Compile Include="Models\Edge.cs" />
+    <Compile Include="Models\Graph.cs" />
+    <Compile Include="Models\Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -69,6 +71,22 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Business\Concrete\.vs\Concrete\CopilotIndices\17.14.1347.20289\CodeChunks.db" />
+    <None Include="Business\Concrete\.vs\Concrete\CopilotIndices\17.14.1347.20289\SemanticSymbols.db" />
+    <None Include="Business\Concrete\.vs\Concrete\FileContentIndex\4764c301-02f7-4b37-8ad9-502bade84621.vsidx" />
+    <None Include="Business\Concrete\.vs\Concrete\v17\.wsuo" />
+    <None Include="Business\Concrete\.vs\Concrete\v17\DocumentLayout.json" />
+    <None Include="Business\Concrete\.vs\slnx.sqlite" />
+    <None Include="Business\Concrete\.vs\VSWorkspaceState.json" />
+    <None Include="Models\.vs\Models\CopilotIndices\17.14.1347.20289\CodeChunks.db" />
+    <None Include="Models\.vs\Models\CopilotIndices\17.14.1347.20289\SemanticSymbols.db" />
+    <None Include="Models\.vs\Models\FileContentIndex\20bfef39-249a-44be-9c15-bb8430f249f1.vsidx" />
+    <None Include="Models\.vs\Models\FileContentIndex\37ad0dee-288c-40e5-947b-84b48f13e80a.vsidx" />
+    <None Include="Models\.vs\Models\FileContentIndex\66f6e39b-0fe0-4ca6-888c-f6fbadb67ce0.vsidx" />
+    <None Include="Models\.vs\Models\v17\.wsuo" />
+    <None Include="Models\.vs\Models\v17\DocumentLayout.json" />
+    <None Include="Models\.vs\slnx.sqlite" />
+    <None Include="Models\.vs\VSWorkspaceState.json" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -81,6 +99,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Business\Abstract\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
