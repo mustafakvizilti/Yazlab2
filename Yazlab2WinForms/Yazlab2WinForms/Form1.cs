@@ -5,6 +5,10 @@ using System.Linq;
 using System.Windows.Forms;
 using Yazlab2WinForms.Business.Concrete; // Manager
 using Yazlab2WinForms.Models;           // Graph, Node
+using System.Web.Script.Serialization; // JSON için şart 
+using Yazlab2WinForms.Business.Concrete;
+using Yazlab2WinForms.Models;
+using System.IO;
 
 namespace Yazlab2WinForms
 {
@@ -22,6 +26,7 @@ namespace Yazlab2WinForms
         {
             InitializeComponent();
         }
+            
         private void ShowTop5Influencers()
         {
             if (graph.Nodes.Count == 0)
@@ -55,6 +60,24 @@ namespace Yazlab2WinForms
 
             // 3. Sonucu Mesaj Kutusu ile Göster
             MessageBox.Show(finalMessage, "Merkezilik Analizi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFile = new SaveFileDialog();
+            saveFile.Filter = "JSON Dosyası|*.json";
+            if (saveFile.ShowDialog() == DialogResult.OK)
+            {
+                SaveGraphToJson(saveFile.FileName);
+            }
+        }
+        private void btnLoad_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFile = new OpenFileDialog();
+            openFile.Filter = "JSON Dosyası|*.json";
+            if (openFile.ShowDialog() == DialogResult.OK)
+            {
+                LoadGraphFromJson(openFile.FileName);
+            }
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -328,6 +351,56 @@ namespace Yazlab2WinForms
         }
 
         // Çizim
+        private void SaveGraphToJson(string filePath)
+        {
+            var dataToSave = new
+            {
+                Nodes = graph.Nodes.Select(n => new { n.Name, n.Position.X, n.Position.Y }).ToList(),
+                Edges = graph.Edges.Select(e => new {
+                    From = e.From.Name,
+                    To = e.To.Name,
+                    Type = e.Type.ToString(),
+                    Weight = e.Weight
+                }).ToList()
+            };
+
+            string json = new JavaScriptSerializer().Serialize(dataToSave);
+            File.WriteAllText(filePath, json);
+            MessageBox.Show("Veriler başarıyla kaydedildi!", "Sistem");
+        }
+
+        // Verileri JSON dosyasından geri yükleme
+        private void LoadGraphFromJson(string filePath)
+        {
+            if (!File.Exists(filePath)) return;
+
+            string json = File.ReadAllText(filePath);
+            dynamic data = new JavaScriptSerializer().Deserialize<dynamic>(json);
+
+            graph = new Graph(); // Mevcut grafı sıfırla
+            nodeColors.Clear();
+
+            // Düğümleri geri yükle
+            foreach (var n in data["Nodes"])
+            {
+                Node newNode = new Node(n["Name"].ToString(), new Point((int)n["X"], (int)n["Y"]));
+                graph.AddNode(newNode);
+            }
+
+            // Bağlantıları geri yükle
+            foreach (var e in data["Edges"])
+            {
+                Node fromNode = graph.Nodes.First(n => n.Name == e["From"].ToString());
+                Node toNode = graph.Nodes.First(n => n.Name == e["To"].ToString());
+                RelationType type = (RelationType)Enum.Parse(typeof(RelationType), e["Type"].ToString());
+                int weight = (int)e["Weight"];
+
+                graph.AddEdge(fromNode, toNode, type, weight);
+            }
+
+            pictureBox1.Invalidate();
+            MessageBox.Show("Veriler başarıyla geri yüklendi!", "Sistem");
+        }
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
