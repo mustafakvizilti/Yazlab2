@@ -10,17 +10,52 @@ namespace Yazlab2WinForms
 {
     public partial class Form1 : Form
     {
+
         GraphManager _manager = new GraphManager(); // GraphManager nesnesi
         Graph _currentGraph;
 
         private Graph graph = new Graph();
         private List<List<Node>> pathToHighlight = null;
+        private Dictionary<string, Color> nodeColors = new Dictionary<string, Color>();
 
         public Form1()
         {
             InitializeComponent();
         }
+        private void ShowTop5Influencers()
+        {
+            if (graph.Nodes.Count == 0)
+            {
+                MessageBox.Show("Sistemde henüz düğüm bulunmuyor.");
+                return;
+            }
 
+            // 1. Derece Merkeziliği Hesaplama (LINQ kullanarak)
+            var degreeCentralityList = graph.Nodes.Select(node => new
+            {
+                NodeName = node.Name,
+                // Düğümün hem kaynak hem de hedef olduğu tüm kenarları sayıyoruz
+                Degree = graph.Edges.Count(e => e.From == node || e.To == node)
+            })
+            .OrderByDescending(x => x.Degree) // Dereceye göre azalan sıralama
+            .Take(5) // En yüksek 5 taneyi al
+            .ToList();
+
+            // 2. Tablo Görünümü Oluşturma
+            string tableHeader = string.Format("{0,-15} | {1,-10}\n", "Kullanıcı Adı", "Derece");
+            string separator = new string('-', 30) + "\n";
+            string tableRows = "";
+
+            foreach (var item in degreeCentralityList)
+            {
+                tableRows += string.Format("{0,-15} | {1,-10}\n", item.NodeName, item.Degree);
+            }
+
+            string finalMessage = "En Etkili 5 Kullanıcı (Degree Centrality):\n\n" + tableHeader + separator + tableRows;
+
+            // 3. Sonucu Mesaj Kutusu ile Göster
+            MessageBox.Show(finalMessage, "Merkezilik Analizi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             cmbRelType.DataSource = Enum.GetValues(typeof(RelationType));
@@ -67,7 +102,39 @@ namespace Yazlab2WinForms
                 graph.Nodes[i].Position = new Point(x, y);
             }
         }
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            // Tıklanan noktayı alıyoruz
+            Point mouseLocation = e.Location;
+            Node clickedNode = null;
 
+            // Her düğümü kontrol et: Fare koordinatı düğüm dairesinin (50x50) içinde mi?
+            foreach (var node in graph.Nodes)
+            {
+                // Düğümler 50x50 boyutunda çiziliyor
+                Rectangle nodeRect = new Rectangle(node.Position.X, node.Position.Y, 50, 50);
+
+                if (nodeRect.Contains(mouseLocation))
+                {
+                    clickedNode = node;
+                    break;
+                }
+            }
+
+            if (clickedNode != null)
+            {
+                // Düğüm bilgilerini topla
+                int connectionCount = graph.Edges.Count(edge => edge.From == clickedNode || edge.To == clickedNode);
+
+                string info = $"Düğüm Adı: {clickedNode.Name}\n" +
+                              $"Toplam Bağlantı: {connectionCount}\n" +
+                              $"Pozisyon: X:{clickedNode.Position.X}, Y:{clickedNode.Position.Y}";
+
+                // Bilgiyi hem Label'da hem de Mesaj Kutusunda göster
+                lblInfo.Text = $"Seçili: {clickedNode.Name}";
+                MessageBox.Show(info, "Düğüm Bilgileri");
+            }
+        }
         // Kenar ekleme
         private void btnAddEdge_Click(object sender, EventArgs e)
         {
@@ -207,7 +274,58 @@ namespace Yazlab2WinForms
 
             pictureBox1.Invalidate();
         }
+        private void btnDeleteNode_Click(object sender, EventArgs e)
+        {
+            string nodeName = txtNodeName.Text.Trim();
+            var nodeToDelete = graph.Nodes.FirstOrDefault(n => n.Name == nodeName);
 
+            if (nodeToDelete != null)
+            {
+                // 1. Düğümü sil
+                graph.Nodes.Remove(nodeToDelete);
+
+                // 2. Bu düğüme bağlı tüm kenarları (bağlantıları) temizle
+                graph.Edges.RemoveAll(edge => edge.From == nodeToDelete || edge.To == nodeToDelete);
+
+                // 3. Görseli ve pozisyonları güncelle
+                UpdateNodePositions();
+                pictureBox1.Invalidate();
+                lblInfo.Text = $"Düğüm ve ilgili bağlantılar silindi: {nodeName}";
+            }
+            else
+            {
+                lblInfo.Text = "Silinecek düğüm bulunamadı!";
+            }
+        }
+        private void btnDeleteEdge_Click(object sender, EventArgs e)
+        {
+            string sourceName = txtSource.Text.Trim();
+            string targetName = txtTarget.Text.Trim();
+
+            var sourceNode = graph.Nodes.FirstOrDefault(n => n.Name == sourceName);
+            var targetNode = graph.Nodes.FirstOrDefault(n => n.Name == targetName);
+
+            if (sourceNode == null || targetNode == null)
+            {
+                lblInfo.Text = "Kaynak veya hedef düğüm bulunamadı!";
+                return;
+            }
+
+            // İki düğüm arasındaki tüm bağlantıları sil (yön fark etmeksizin)
+            int removedCount = graph.Edges.RemoveAll(edge =>
+                (edge.From == sourceNode && edge.To == targetNode) ||
+                (edge.From == targetNode && edge.To == sourceNode));
+
+            if (removedCount > 0)
+            {
+                lblInfo.Text = $"{removedCount} adet bağlantı silindi.";
+                pictureBox1.Invalidate();
+            }
+            else
+            {
+                lblInfo.Text = "Belirtilen düğümler arasında bağlantı yok.";
+            }
+        }
 
         // Çizim
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
@@ -281,10 +399,16 @@ namespace Yazlab2WinForms
             }
 
             // Düğümleri çiz (Bu kısım da aynı)
+            // pictureBox1_Paint içindeki düğüm çizim döngüsünü bununla değiştirin:
             foreach (var node in graph.Nodes)
             {
-                g.FillEllipse(Brushes.White, node.Position.X, node.Position.Y, 50, 50);
+                // Eğer bir renk ataması yapılmışsa o rengi kullan, yoksa Beyaz kullan
+                Brush nodeBrush = nodeColors.ContainsKey(node.Name) ?
+                                  new SolidBrush(nodeColors[node.Name]) : Brushes.White;
+
+                g.FillEllipse(nodeBrush, node.Position.X, node.Position.Y, 50, 50);
                 g.DrawEllipse(Pens.Black, node.Position.X, node.Position.Y, 50, 50);
+
                 StringFormat sf = new StringFormat { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
                 g.DrawString(node.Name, this.Font, Brushes.Black, new RectangleF(node.Position.X, node.Position.Y, 50, 50), sf);
             }
@@ -316,6 +440,158 @@ namespace Yazlab2WinForms
             {
                 MessageBox.Show("Henüz hiç bağlantı (çizgi) yok.");
             }
+        }
+        // BFS Algoritması: Katman katman (genişlik öncelikli) arama yapar
+        private List<Node> GetReachableNodesBFS(Node startNode)
+        {
+            List<Node> visited = new List<Node>();
+            Queue<Node> queue = new Queue<Node>();
+
+            queue.Enqueue(startNode);
+            visited.Add(startNode);
+
+            while (queue.Count > 0)
+            {
+                Node current = queue.Dequeue();
+
+                // Mevcut düğümün tüm komşularını bul
+                var neighbors = graph.Edges
+                    .Where(e => e.From == current || e.To == current)
+                    .Select(e => e.From == current ? e.To : e.From);
+
+                foreach (var neighbor in neighbors)
+                {
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+            return visited;
+        }
+
+        // DFS Algoritması: Bir daldan sonuna kadar (derinlik öncelikli) gider
+        private void GetReachableNodesDFS(Node current, List<Node> visited)
+        {
+            visited.Add(current);
+
+            var neighbors = graph.Edges
+                .Where(e => e.From == current || e.To == current)
+                .Select(e => e.From == current ? e.To : e.From);
+
+            foreach (var neighbor in neighbors)
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    GetReachableNodesDFS(neighbor, visited);
+                }
+            }
+        }
+        private void ApplyWelshPowellColoring()
+        {
+            if (graph.Nodes.Count == 0) return;
+
+            // HATALI SATIR: Dictionary<string, Color> nodeColors = new Dictionary<string, Color>(); 
+            // DOĞRUSU: Sınıf düzeyindeki değişkeni temizleyip kullanıyoruz.
+            nodeColors.Clear();
+
+            var sortedNodes = graph.Nodes
+                .Select(n => new {
+                    Node = n,
+                    Degree = graph.Edges.Count(e => e.From == n || e.To == n)
+                })
+                .OrderByDescending(x => x.Degree)
+                .ToList();
+
+            List<Color> palette = new List<Color> {
+        Color.Red, Color.Blue, Color.Green, Color.Yellow,
+        Color.Purple, Color.Orange, Color.Pink, Color.Cyan
+    };
+
+            int currentColorIndex = 0;
+            var remainingNodes = sortedNodes.Select(x => x.Node).ToList();
+
+            while (remainingNodes.Count > 0)
+            {
+                Color currentColor = palette[currentColorIndex % palette.Count];
+                List<Node> coloredInThisRound = new List<Node>();
+
+                for (int i = 0; i < remainingNodes.Count; i++)
+                {
+                    Node currentNode = remainingNodes[i];
+
+                    // ÖNEMLİ: Sadece 'coloredInThisRound' listesindekilerle değil, 
+                    // halihazırda O RENGE boyanmış tüm komşuları kontrol etmelisiniz.
+                    bool hasNeighborWithSameColor = coloredInThisRound.Any(node => IsNeighbor(currentNode, node));
+
+                    if (!hasNeighborWithSameColor)
+                    {
+                        nodeColors[currentNode.Name] = currentColor;
+                        coloredInThisRound.Add(currentNode);
+                    }
+                }
+
+                remainingNodes.RemoveAll(n => coloredInThisRound.Contains(n));
+                currentColorIndex++;
+            }
+
+            // Tablo raporu hazırlama kısmı aynı kalabilir...
+            string report = string.Format("{0,-15} | {1,-10} | {2,-10}\n", "Düğüm", "Derece", "Renk");
+            report += new string('-', 40) + "\n";
+            foreach (var item in sortedNodes)
+            {
+                string colorName = nodeColors.ContainsKey(item.Node.Name) ? nodeColors[item.Node.Name].Name : "Beyaz";
+                report += string.Format("{0,-15} | {1,-10} | {2,-10}\n", item.Node.Name, item.Degree, colorName);
+            }
+
+            MessageBox.Show(report, "Welsh-Powell Boyama Tablosu");
+
+            // ÇİZİMİ TETİKLE: Renklerin ekrana yansıması için Invalidate şarttır.
+            pictureBox1.Invalidate();
+        }
+
+        // İki düğümün komşu olup olmadığını kontrol eden yardımcı fonksiyon
+        private bool IsNeighbor(Node n1, Node n2)
+        {
+            return graph.Edges.Any(e =>
+                (e.From == n1 && e.To == n2) ||
+                (e.To == n1 && e.From == n2));
+        }
+        private void btnBFS_Click(object sender, EventArgs e)
+        {
+            Node start = graph.Nodes.FirstOrDefault(n => n.Name == txtSource.Text.Trim());
+            if (start == null) { MessageBox.Show("Başlangıç düğümünü girin!"); return; }
+
+            List<Node> reachable = GetReachableNodesBFS(start);
+            string result = string.Join(", ", reachable.Select(n => n.Name));
+            MessageBox.Show($"BFS ile Erişilebilen Kullanıcılar:\n{result}", "BFS Sonucu");
+        }
+
+        private void btnDFS_Click(object sender, EventArgs e)
+        {
+            Node start = graph.Nodes.FirstOrDefault(n => n.Name == txtSource.Text.Trim());
+            if (start == null) { MessageBox.Show("Başlangıç düğümünü girin!"); return; }
+
+            List<Node> reachable = new List<Node>();
+            GetReachableNodesDFS(start, reachable);
+
+            string result = string.Join(", ", reachable.Select(n => n.Name));
+            MessageBox.Show($"DFS ile Erişilebilen Kullanıcılar:\n{result}", "DFS Sonucu");
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            ShowTop5Influencers();
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnColoring_Click(object sender, EventArgs e)
+        {
+            ApplyWelshPowellColoring();
         }
     }
 }
