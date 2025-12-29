@@ -65,5 +65,50 @@ namespace Yazlab2WinForms.Models
             }
             return paths;
         }
+
+        // BFS Algoritması: Bir düğümden erişilebilen tüm kullanıcıları bulur [cite: 34]
+        public List<Node> GetReachableNodesBFS(Graph graph, Node startNode)
+        {
+            List<Node> visited = new List<Node>();
+            Queue<Node> queue = new Queue<Node>();
+
+            queue.Enqueue(startNode);
+            visited.Add(startNode);
+
+            while (queue.Count > 0)
+            {
+                Node current = queue.Dequeue();
+                var neighbors = graph.Edges
+                    .Where(e => e.From == current || e.To == current)
+                    .Select(e => e.From == current ? e.To : e.From);
+
+                foreach (var neighbor in neighbors)
+                {
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+            return visited;
+        }
+
+        // DFS Algoritması: Derinlik öncelikli olarak tüm kullanıcıları bulur [cite: 34]
+        public void GetReachableNodesDFS(Graph graph, Node current, List<Node> visited)
+        {
+            visited.Add(current);
+            var neighbors = graph.Edges
+                .Where(e => e.From == current || e.To == current)
+                .Select(e => e.From == current ? e.To : e.From);
+
+            foreach (var neighbor in neighbors)
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    GetReachableNodesDFS(graph, neighbor, visited);
+                }
+            }
+        }
     }
 }

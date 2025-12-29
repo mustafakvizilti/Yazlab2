@@ -36,8 +36,11 @@
             this.button10 = new System.Windows.Forms.Button();
             this.button11 = new System.Windows.Forms.Button();
             this.button12 = new System.Windows.Forms.Button();
+            this.numAktiflik = new System.Windows.Forms.NumericUpDown();
+            this.buttonUpdateNode = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).BeginInit();
             this.SuspendLayout();
             // 
             // txtNodeName
@@ -166,7 +169,7 @@
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(0, 247);
+            this.button6.Location = new System.Drawing.Point(0, 260);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(102, 34);
             this.button6.TabIndex = 13;
@@ -176,7 +179,7 @@
             // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(0, 287);
+            this.button7.Location = new System.Drawing.Point(0, 339);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(102, 32);
             this.button7.TabIndex = 14;
@@ -186,7 +189,7 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(0, 325);
+            this.button8.Location = new System.Drawing.Point(140, 348);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(75, 23);
             this.button8.TabIndex = 15;
@@ -196,7 +199,7 @@
             // 
             // button9
             // 
-            this.button9.Location = new System.Drawing.Point(0, 354);
+            this.button9.Location = new System.Drawing.Point(140, 377);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(75, 23);
             this.button9.TabIndex = 16;
@@ -206,7 +209,7 @@
             // 
             // button10
             // 
-            this.button10.Location = new System.Drawing.Point(0, 383);
+            this.button10.Location = new System.Drawing.Point(140, 406);
             this.button10.Name = "button10";
             this.button10.Size = new System.Drawing.Size(75, 23);
             this.button10.TabIndex = 17;
@@ -234,9 +237,44 @@
             this.button12.UseVisualStyleBackColor = true;
             this.button12.Click += new System.EventHandler(this.btnLoad_Click);
             // 
+            // numAktiflik
+            // 
+            this.numAktiflik.DecimalPlaces = 1;
+            this.numAktiflik.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.numAktiflik.Location = new System.Drawing.Point(106, 114);
+            this.numAktiflik.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numAktiflik.Name = "numAktiflik";
+            this.numAktiflik.Size = new System.Drawing.Size(91, 22);
+            this.numAktiflik.TabIndex = 20;
+            this.numAktiflik.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            // 
+            // buttonUpdateNode
+            // 
+            this.buttonUpdateNode.Location = new System.Drawing.Point(2, 300);
+            this.buttonUpdateNode.Name = "buttonUpdateNode";
+            this.buttonUpdateNode.Size = new System.Drawing.Size(124, 33);
+            this.buttonUpdateNode.TabIndex = 21;
+            this.buttonUpdateNode.Text = "Düğümü Güncelle";
+            this.buttonUpdateNode.UseVisualStyleBackColor = true;
+            this.buttonUpdateNode.Click += new System.EventHandler(this.buttonUpdateNode_Click);
+            // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.buttonUpdateNode);
+            this.Controls.Add(this.numAktiflik);
             this.Controls.Add(this.button12);
             this.Controls.Add(this.button11);
             this.Controls.Add(this.button10);
@@ -262,6 +300,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -288,5 +327,7 @@
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.Button button11;
         private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.NumericUpDown numAktiflik;
+        private System.Windows.Forms.Button buttonUpdateNode;
     }
 }

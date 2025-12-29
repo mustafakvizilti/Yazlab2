@@ -48,5 +48,17 @@ namespace Yazlab2WinForms.Business.Concrete
 
             return kazananlar;
         }
+
+        // Merkezilik (degree centrality) analizi [cite: 37]
+        public List<dynamic> GetTop5Influencers(Graph graph)
+        {
+            return graph.Nodes.Select(node => new
+            {
+                NodeName = node.Name,
+                Degree = graph.Edges.Count(e => e.From == node || e.To == node)
+            })
+            .OrderByDescending(x => x.Degree)
+            .Take(5).Cast<dynamic>().ToList();
+        }
     }
 }

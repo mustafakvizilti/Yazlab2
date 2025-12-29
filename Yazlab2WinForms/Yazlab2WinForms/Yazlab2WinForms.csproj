@@ -56,6 +56,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\Algorithm.cs" />
+    <Compile Include="Models\Coloring.cs" />
     <Compile Include="Models\Edge.cs" />
     <Compile Include="Models\Graph.cs" />
     <Compile Include="Models\Node.cs" />
