@@ -159,7 +159,8 @@ namespace Yazlab2WinForms
             }
 
             // Algoritma çalıştırılıyor
-            var allPaths = graph.FindAllShortestPaths(start, end);
+            Algorithm alg = new Algorithm();
+            var allPaths = alg.FindShortestPaths(graph, start, end); // Algoritmayı bu nesne üzerinden çalıştırıyoruz
 
             if (allPaths.Count == 0 || (allPaths.Count == 1 && allPaths[0].Count == 1 && allPaths[0][0] != start))
             {
