@@ -384,32 +384,48 @@ namespace Yazlab2WinForms
         {
             if (!File.Exists(filePath)) return;
 
-            string json = File.ReadAllText(filePath);
-            dynamic data = new JavaScriptSerializer().Deserialize<dynamic>(json);
-
-            graph = new Graph(); // Mevcut grafı sıfırla
-            nodeColors.Clear();
-
-            // Düğümleri geri yükle
-            foreach (var n in data["Nodes"])
+            try
             {
-                Node newNode = new Node(n["Name"].ToString(), new Point((int)n["X"], (int)n["Y"]));
-                graph.AddNode(newNode);
-            }
+                string json = File.ReadAllText(filePath);
+                dynamic data = new JavaScriptSerializer().Deserialize<dynamic>(json);
 
-            // Bağlantıları geri yükle
-            foreach (var e in data["Edges"])
+                // 1. Mevcut veriyi tamamen temizle
+                graph = new Graph();
+                nodeColors.Clear();
+
+                // 2. Düğümleri tek tek oku (Aktiflik dahil)
+                foreach (var n in data["Nodes"])
+                {
+                    string name = n["Name"].ToString();
+                    // JSON'dan gelen sayıları güvenli bir şekilde tam sayıya çeviriyoruz
+                    int x = Convert.ToInt32(n["X"]);
+                    int y = Convert.ToInt32(n["Y"]);
+                    // Aktiflik değerini de geri yüklüyoruz
+                    double aktif = n.ContainsKey("Aktiflik") ? Convert.ToDouble(n["Aktiflik"]) : 0.5;
+
+                    Node newNode = new Node(name, new Point(x, y), aktif);
+                    graph.AddNode(newNode);
+                }
+
+                // 3. Bağlantıları geri yükle
+                foreach (var e in data["Edges"])
+                {
+                    Node fromNode = graph.Nodes.First(node => node.Name == e["From"].ToString());
+                    Node toNode = graph.Nodes.First(node => node.Name == e["To"].ToString());
+                    RelationType type = (RelationType)Enum.Parse(typeof(RelationType), e["Type"].ToString());
+                    int weight = Convert.ToInt32(e["Weight"]);
+
+                    graph.AddEdge(fromNode, toNode, type, weight);
+                }
+
+                // 4. Ekranda görünmesi için zorla tazele
+                pictureBox1.Refresh();
+                MessageBox.Show("Graf verileri, Aktiflikler ve Matris başarıyla yüklendi!", "Sistem");
+            }
+            catch (Exception ex)
             {
-                Node fromNode = graph.Nodes.First(n => n.Name == e["From"].ToString());
-                Node toNode = graph.Nodes.First(n => n.Name == e["To"].ToString());
-                RelationType type = (RelationType)Enum.Parse(typeof(RelationType), e["Type"].ToString());
-                int weight = (int)e["Weight"];
-
-                graph.AddEdge(fromNode, toNode, type, weight);
+                MessageBox.Show("Yükleme sırasında bir hata oluştu: " + ex.Message);
             }
-
-            pictureBox1.Invalidate();
-            MessageBox.Show("Veriler başarıyla geri yüklendi!", "Sistem");
         }
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
