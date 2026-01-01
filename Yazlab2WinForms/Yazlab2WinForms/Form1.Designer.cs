@@ -45,6 +45,7 @@
             this.Yol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Süre = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Maliyet = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.buttonAStar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).BeginInit();
@@ -125,7 +126,7 @@
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(124, 31);
             this.button3.TabIndex = 8;
-            this.button3.Text = "En Kısa Yol";
+            this.button3.Text = "Dijkstra";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.btnShortestPath_Click);
             // 
@@ -144,7 +145,7 @@
             this.cmbRelType.FormattingEnabled = true;
             this.cmbRelType.Location = new System.Drawing.Point(97, 56);
             this.cmbRelType.Name = "cmbRelType";
-            this.cmbRelType.Size = new System.Drawing.Size(41, 24);
+            this.cmbRelType.Size = new System.Drawing.Size(81, 24);
             this.cmbRelType.TabIndex = 10;
             // 
             // numWeight
@@ -343,9 +344,20 @@
             this.Maliyet.Name = "Maliyet";
             this.Maliyet.Width = 125;
             // 
+            // buttonAStar
+            // 
+            this.buttonAStar.Location = new System.Drawing.Point(120, 221);
+            this.buttonAStar.Name = "buttonAStar";
+            this.buttonAStar.Size = new System.Drawing.Size(124, 30);
+            this.buttonAStar.TabIndex = 24;
+            this.buttonAStar.Text = "A*";
+            this.buttonAStar.UseVisualStyleBackColor = true;
+            this.buttonAStar.Click += new System.EventHandler(this.buttonAStar_Click);
+            // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(1360, 658);
+            this.Controls.Add(this.buttonAStar);
             this.Controls.Add(this.dgvResults);
             this.Controls.Add(this.button13);
             this.Controls.Add(this.buttonUpdateNode);
@@ -412,5 +424,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Yol;
         private System.Windows.Forms.DataGridViewTextBoxColumn Süre;
         private System.Windows.Forms.DataGridViewTextBoxColumn Maliyet;
+        private System.Windows.Forms.Button buttonAStar;
     }
 }
