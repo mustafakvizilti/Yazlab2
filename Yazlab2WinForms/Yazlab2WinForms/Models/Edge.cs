@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Yazlab2WinForms.Models   
 {
-    public enum RelationType { Akraba, Arkadas, Is, Tanidik } // İlişki türleri (sonradan eklendi)
+    public enum RelationType { Akraba, Arkadas, Is, Tanidik } // İlişki türleri
     public class Edge
     {
         public Node From { get; set; }

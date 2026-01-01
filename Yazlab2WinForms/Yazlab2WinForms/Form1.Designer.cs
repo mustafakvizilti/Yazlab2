@@ -38,9 +38,17 @@
             this.button12 = new System.Windows.Forms.Button();
             this.numAktiflik = new System.Windows.Forms.NumericUpDown();
             this.buttonUpdateNode = new System.Windows.Forms.Button();
+            this.buttonAStar = new System.Windows.Forms.Button();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
+            this.Algoritma = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colNodeCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Yol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Maliyet = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
             this.SuspendLayout();
             // 
             // txtNodeName
@@ -114,7 +122,7 @@
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(124, 31);
             this.button3.TabIndex = 8;
-            this.button3.Text = "En Kısa Yol";
+            this.button3.Text = "Dijkstra";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.btnShortestPath_Click);
             // 
@@ -133,7 +141,7 @@
             this.cmbRelType.FormattingEnabled = true;
             this.cmbRelType.Location = new System.Drawing.Point(97, 56);
             this.cmbRelType.Name = "cmbRelType";
-            this.cmbRelType.Size = new System.Drawing.Size(41, 24);
+            this.cmbRelType.Size = new System.Drawing.Size(77, 24);
             this.cmbRelType.TabIndex = 10;
             // 
             // numWeight
@@ -271,9 +279,73 @@
             this.buttonUpdateNode.UseVisualStyleBackColor = true;
             this.buttonUpdateNode.Click += new System.EventHandler(this.buttonUpdateNode_Click);
             // 
+            // buttonAStar
+            // 
+            this.buttonAStar.Location = new System.Drawing.Point(120, 222);
+            this.buttonAStar.Name = "buttonAStar";
+            this.buttonAStar.Size = new System.Drawing.Size(124, 31);
+            this.buttonAStar.TabIndex = 22;
+            this.buttonAStar.Text = "A*";
+            this.buttonAStar.UseVisualStyleBackColor = true;
+            this.buttonAStar.Click += new System.EventHandler(this.buttonAStar_Click);
+            // 
+            // dgvResults
+            // 
+            this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvResults.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Algoritma,
+            this.colNodeCount,
+            this.Yol,
+            this.colTime,
+            this.Maliyet});
+            this.dgvResults.Location = new System.Drawing.Point(805, 12);
+            this.dgvResults.Name = "dgvResults";
+            this.dgvResults.RowHeadersWidth = 51;
+            this.dgvResults.RowTemplate.Height = 24;
+            this.dgvResults.Size = new System.Drawing.Size(579, 426);
+            this.dgvResults.TabIndex = 23;
+            this.dgvResults.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvResults_CellContentClick);
+            // 
+            // Algoritma
+            // 
+            this.Algoritma.HeaderText = "Algoritma Adı";
+            this.Algoritma.MinimumWidth = 6;
+            this.Algoritma.Name = "Algoritma";
+            this.Algoritma.Width = 125;
+            // 
+            // colNodeCount
+            // 
+            this.colNodeCount.HeaderText = "Düğüm Sayısı";
+            this.colNodeCount.MinimumWidth = 6;
+            this.colNodeCount.Name = "colNodeCount";
+            this.colNodeCount.Width = 125;
+            // 
+            // Yol
+            // 
+            this.Yol.HeaderText = "İzlenen Yol";
+            this.Yol.MinimumWidth = 6;
+            this.Yol.Name = "Yol";
+            this.Yol.Width = 125;
+            // 
+            // colTime
+            // 
+            this.colTime.HeaderText = "Süre";
+            this.colTime.MinimumWidth = 6;
+            this.colTime.Name = "colTime";
+            this.colTime.Width = 125;
+            // 
+            // Maliyet
+            // 
+            this.Maliyet.HeaderText = "Toplam Dinamik Maliyet";
+            this.Maliyet.MinimumWidth = 6;
+            this.Maliyet.Name = "Maliyet";
+            this.Maliyet.Width = 125;
+            // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1386, 450);
+            this.Controls.Add(this.dgvResults);
+            this.Controls.Add(this.buttonAStar);
             this.Controls.Add(this.buttonUpdateNode);
             this.Controls.Add(this.numAktiflik);
             this.Controls.Add(this.button12);
@@ -302,6 +374,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -330,5 +403,12 @@
         private System.Windows.Forms.Button button12;
         private System.Windows.Forms.NumericUpDown numAktiflik;
         private System.Windows.Forms.Button buttonUpdateNode;
+        private System.Windows.Forms.Button buttonAStar;
+        private System.Windows.Forms.DataGridView dgvResults;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Algoritma;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colNodeCount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Yol;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Maliyet;
     }
 }

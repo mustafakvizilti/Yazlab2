@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Business\Abstract\IAlgorithmService.cs" />
+    <Compile Include="Business\Abstract\IColoringService.cs" />
+    <Compile Include="Business\Abstract\IGraphService.cs" />
     <Compile Include="Business\Concrete\GraphManager.cs" />
     <Compile Include="DataAccess\GraphData.cs" />
     <Compile Include="Form1.cs">
@@ -103,8 +106,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Business\Abstract\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

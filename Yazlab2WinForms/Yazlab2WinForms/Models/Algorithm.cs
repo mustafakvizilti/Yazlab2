@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Yazlab2WinForms.Abstract;
 
 namespace Yazlab2WinForms.Models
 {
-    public class Algorithm
+    public class Algorithm : IAlgorithmService
     {
-        // 4.3 Maddesindeki Dinamik Ağırlık Formülü
+        
         public double GetDynamicWeight(Node i, Node j)
         {
             double dA = Math.Pow(i.Aktiflik - j.Aktiflik, 2);
             double dI = Math.Pow(i.IliskiGucu - j.IliskiGucu, 2);
             double dB = Math.Pow(i.BaglantiSayisi - j.BaglantiSayisi, 2);
 
-            // Formül: 1 + Kök( farkların kareleri toplamı )
+            
             return 1 + Math.Sqrt(dA + dI + dB);
         }
 
@@ -37,7 +38,7 @@ namespace Yazlab2WinForms.Models
 
                 foreach (var v in neighbors)
                 {
-                    // ARTIK BURADA DİNAMİK FORMÜL ÇALIŞIYOR
+                    
                     double weight = GetDynamicWeight(u, v);
                     double alt = distances[u] + weight;
 
@@ -66,7 +67,7 @@ namespace Yazlab2WinForms.Models
             return paths;
         }
 
-        // BFS Algoritması: Bir düğümden erişilebilen tüm kullanıcıları bulur [cite: 34]
+        // BFS
         public List<Node> GetReachableNodesBFS(Graph graph, Node startNode)
         {
             List<Node> visited = new List<Node>();
@@ -94,7 +95,7 @@ namespace Yazlab2WinForms.Models
             return visited;
         }
 
-        // DFS Algoritması: Derinlik öncelikli olarak tüm kullanıcıları bulur [cite: 34]
+        // DFS
         public void GetReachableNodesDFS(Graph graph, Node current, List<Node> visited)
         {
             visited.Add(current);
@@ -109,6 +110,74 @@ namespace Yazlab2WinForms.Models
                     GetReachableNodesDFS(graph, neighbor, visited);
                 }
             }
+        }
+
+        // A* (A-Star) Algoritması
+        public List<Node> FindShortestPathAStar(Graph graph, Node start, Node end)
+        {
+            var openSet = new List<Node> { start };
+            var cameFrom = new Dictionary<Node, Node>();
+
+            var gScore = new Dictionary<Node, double>(); 
+            var fScore = new Dictionary<Node, double>();
+
+            foreach (var n in graph.Nodes)
+            {
+                gScore[n] = double.MaxValue;
+                fScore[n] = double.MaxValue;
+            }
+
+            gScore[start] = 0;
+            fScore[start] = GetHeuristic(start, end);
+
+            while (openSet.Any())
+            {
+                
+                var current = openSet.OrderBy(n => fScore[n]).First();
+
+                if (current == end) return ReconstructPath(cameFrom, current);
+
+                openSet.Remove(current);
+
+                var neighbors = graph.Edges
+                    .Where(e => e.From == current || e.To == current)
+                    .Select(e => e.From == current ? e.To : e.From).Distinct();
+
+                foreach (var neighbor in neighbors)
+                {
+                    
+                    double tentativeGScore = gScore[current] + GetDynamicWeight(current, neighbor);
+
+                    if (tentativeGScore < gScore[neighbor])
+                    {
+                        cameFrom[neighbor] = current;
+                        gScore[neighbor] = tentativeGScore;
+                        fScore[neighbor] = gScore[neighbor] + GetHeuristic(neighbor, end);
+
+                        if (!openSet.Contains(neighbor))
+                            openSet.Add(neighbor);
+                    }
+                }
+            }
+            return new List<Node>(); 
+        }
+
+        // Heuristic (Sezgisel) Fonksiyon
+        private double GetHeuristic(Node n1, Node n2)
+        {
+            return Math.Sqrt(Math.Pow(n1.Position.X - n2.Position.X, 2) +
+                             Math.Pow(n1.Position.Y - n2.Position.Y, 2)) / 100.0;
+        }
+
+        private List<Node> ReconstructPath(Dictionary<Node, Node> cameFrom, Node current)
+        {
+            var path = new List<Node> { current };
+            while (cameFrom.ContainsKey(current))
+            {
+                current = cameFrom[current];
+                path.Insert(0, current);
+            }
+            return path;
         }
     }
 }

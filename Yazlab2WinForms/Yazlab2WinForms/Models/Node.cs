@@ -8,7 +8,7 @@ namespace Yazlab2WinForms.Models
         public Point Position { get; set; }
 
         public double Aktiflik { get; set; }    // Özellik I
-        public double IliskiGucu { get; set; }  // Özellik II (Etkileşim görevi görecek)
+        public double IliskiGucu { get; set; }  // Özellik II (Etkileşim )
         public int BaglantiSayisi { get; set; } // Özellik III
 
         public Node(string name, Point position, double aktiflik = 0.5)

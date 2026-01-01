@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Yazlab2WinForms.Abstract;
 
 namespace Yazlab2WinForms.Models
 {
-    public class Coloring
+    public class Coloring : IColoringService
     {
-        // Welsh-Powell graf renklendirme algoritması [cite: 38]
+        // Welsh-Powell graf renklendirme
         public Dictionary<string, Color> ApplyWelshPowell(Graph graph)
         {
             Dictionary<string, Color> nodeColors = new Dictionary<string, Color>();
