@@ -53,25 +53,25 @@
             // 
             // txtSource
             // 
-            this.txtSource.Location = new System.Drawing.Point(0, 28);
+            this.txtSource.Location = new System.Drawing.Point(97, 0);
             this.txtSource.Name = "txtSource";
-            this.txtSource.Size = new System.Drawing.Size(100, 22);
+            this.txtSource.Size = new System.Drawing.Size(54, 22);
             this.txtSource.TabIndex = 1;
             this.txtSource.Text = "Kaynak";
             // 
             // txtTarget
             // 
-            this.txtTarget.Location = new System.Drawing.Point(0, 56);
+            this.txtTarget.Location = new System.Drawing.Point(97, 28);
             this.txtTarget.Name = "txtTarget";
-            this.txtTarget.Size = new System.Drawing.Size(100, 22);
+            this.txtTarget.Size = new System.Drawing.Size(54, 22);
             this.txtTarget.TabIndex = 2;
             this.txtTarget.Text = "Hedef";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(0, 113);
+            this.button1.Location = new System.Drawing.Point(-2, 71);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.Size = new System.Drawing.Size(75, 51);
             this.button1.TabIndex = 3;
             this.button1.Text = "Düğüm Ekle";
             this.button1.UseVisualStyleBackColor = true;
@@ -79,9 +79,9 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(0, 84);
+            this.button2.Location = new System.Drawing.Point(-2, 28);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(100, 23);
+            this.button2.Size = new System.Drawing.Size(75, 50);
             this.button2.TabIndex = 4;
             this.button2.Text = "Bağlantı Ekle";
             this.button2.UseVisualStyleBackColor = true;
@@ -90,11 +90,12 @@
             // lblInfo
             // 
             this.lblInfo.AutoSize = true;
-            this.lblInfo.Location = new System.Drawing.Point(-3, 199);
+            this.lblInfo.Location = new System.Drawing.Point(12, 203);
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(105, 16);
             this.lblInfo.TabIndex = 6;
             this.lblInfo.Text = "Bilgi bekleniyor..";
+            this.lblInfo.Click += new System.EventHandler(this.lblInfo_Click);
             // 
             // pictureBox1
             // 
@@ -109,9 +110,9 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(0, 173);
+            this.button3.Location = new System.Drawing.Point(120, 247);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.Size = new System.Drawing.Size(124, 31);
             this.button3.TabIndex = 8;
             this.button3.Text = "En Kısa Yol";
             this.button3.UseVisualStyleBackColor = true;
@@ -119,9 +120,9 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(0, 142);
+            this.button4.Location = new System.Drawing.Point(120, 307);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(146, 23);
+            this.button4.Size = new System.Drawing.Size(124, 64);
             this.button4.TabIndex = 9;
             this.button4.Text = "En Güçlü Düğümü Bul";
             this.button4.UseVisualStyleBackColor = true;
@@ -130,14 +131,14 @@
             // cmbRelType
             // 
             this.cmbRelType.FormattingEnabled = true;
-            this.cmbRelType.Location = new System.Drawing.Point(106, 83);
+            this.cmbRelType.Location = new System.Drawing.Point(97, 56);
             this.cmbRelType.Name = "cmbRelType";
-            this.cmbRelType.Size = new System.Drawing.Size(91, 24);
+            this.cmbRelType.Size = new System.Drawing.Size(41, 24);
             this.cmbRelType.TabIndex = 10;
             // 
             // numWeight
             // 
-            this.numWeight.Location = new System.Drawing.Point(203, 83);
+            this.numWeight.Location = new System.Drawing.Point(97, 86);
             this.numWeight.Maximum = new decimal(new int[] {
             10,
             0,
@@ -159,9 +160,9 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(0, 218);
+            this.button5.Location = new System.Drawing.Point(120, 276);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.Size = new System.Drawing.Size(124, 35);
             this.button5.TabIndex = 12;
             this.button5.Text = "Top5Node";
             this.button5.UseVisualStyleBackColor = true;
@@ -169,9 +170,9 @@
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(0, 260);
+            this.button6.Location = new System.Drawing.Point(0, 307);
             this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(102, 34);
+            this.button6.Size = new System.Drawing.Size(124, 34);
             this.button6.TabIndex = 13;
             this.button6.Text = "Düğüm Sil";
             this.button6.UseVisualStyleBackColor = true;
@@ -179,9 +180,9 @@
             // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(0, 339);
+            this.button7.Location = new System.Drawing.Point(-2, 368);
             this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(102, 32);
+            this.button7.Size = new System.Drawing.Size(126, 32);
             this.button7.TabIndex = 14;
             this.button7.Text = "Bağlantı Sil";
             this.button7.UseVisualStyleBackColor = true;
@@ -189,9 +190,9 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(140, 348);
+            this.button8.Location = new System.Drawing.Point(-2, 397);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(75, 23);
+            this.button8.Size = new System.Drawing.Size(126, 32);
             this.button8.TabIndex = 15;
             this.button8.Text = "Boya";
             this.button8.UseVisualStyleBackColor = true;
@@ -199,9 +200,9 @@
             // 
             // button9
             // 
-            this.button9.Location = new System.Drawing.Point(140, 377);
+            this.button9.Location = new System.Drawing.Point(-2, 276);
             this.button9.Name = "button9";
-            this.button9.Size = new System.Drawing.Size(75, 23);
+            this.button9.Size = new System.Drawing.Size(126, 35);
             this.button9.TabIndex = 16;
             this.button9.Text = "Bfs";
             this.button9.UseVisualStyleBackColor = true;
@@ -209,9 +210,9 @@
             // 
             // button10
             // 
-            this.button10.Location = new System.Drawing.Point(140, 406);
+            this.button10.Location = new System.Drawing.Point(0, 247);
             this.button10.Name = "button10";
-            this.button10.Size = new System.Drawing.Size(75, 23);
+            this.button10.Size = new System.Drawing.Size(124, 31);
             this.button10.TabIndex = 17;
             this.button10.Text = "Dfs";
             this.button10.UseVisualStyleBackColor = true;
@@ -219,9 +220,9 @@
             // 
             // button11
             // 
-            this.button11.Location = new System.Drawing.Point(140, 218);
+            this.button11.Location = new System.Drawing.Point(120, 368);
             this.button11.Name = "button11";
-            this.button11.Size = new System.Drawing.Size(75, 23);
+            this.button11.Size = new System.Drawing.Size(124, 32);
             this.button11.TabIndex = 18;
             this.button11.Text = "Kaydet";
             this.button11.UseVisualStyleBackColor = true;
@@ -229,9 +230,9 @@
             // 
             // button12
             // 
-            this.button12.Location = new System.Drawing.Point(140, 247);
+            this.button12.Location = new System.Drawing.Point(120, 397);
             this.button12.Name = "button12";
-            this.button12.Size = new System.Drawing.Size(75, 23);
+            this.button12.Size = new System.Drawing.Size(124, 32);
             this.button12.TabIndex = 19;
             this.button12.Text = "Yükle";
             this.button12.UseVisualStyleBackColor = true;
@@ -245,14 +246,14 @@
             0,
             0,
             65536});
-            this.numAktiflik.Location = new System.Drawing.Point(106, 114);
+            this.numAktiflik.Location = new System.Drawing.Point(97, 114);
             this.numAktiflik.Maximum = new decimal(new int[] {
             1,
             0,
             0,
             0});
             this.numAktiflik.Name = "numAktiflik";
-            this.numAktiflik.Size = new System.Drawing.Size(91, 22);
+            this.numAktiflik.Size = new System.Drawing.Size(41, 22);
             this.numAktiflik.TabIndex = 20;
             this.numAktiflik.Value = new decimal(new int[] {
             5,
@@ -262,7 +263,7 @@
             // 
             // buttonUpdateNode
             // 
-            this.buttonUpdateNode.Location = new System.Drawing.Point(2, 300);
+            this.buttonUpdateNode.Location = new System.Drawing.Point(0, 338);
             this.buttonUpdateNode.Name = "buttonUpdateNode";
             this.buttonUpdateNode.Size = new System.Drawing.Size(124, 33);
             this.buttonUpdateNode.TabIndex = 21;

@@ -636,5 +636,10 @@ namespace Yazlab2WinForms
                 MessageBox.Show("Listede bu isimde bir düğüm bulunamadı. Lütfen önce graf üzerinden bir düğüm seçin.");
             }
         }
+
+        private void lblInfo_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
