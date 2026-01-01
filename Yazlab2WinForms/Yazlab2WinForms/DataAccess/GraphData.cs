@@ -69,5 +69,9 @@ namespace Yazlab2WinForms.DataAccess
 
             return newGraph;
         }
+        public Graph GetGraph() 
+        {
+            return new Graph(); 
+        }
     }
 }

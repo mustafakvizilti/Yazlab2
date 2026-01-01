@@ -39,16 +39,23 @@
             this.numAktiflik = new System.Windows.Forms.NumericUpDown();
             this.buttonUpdateNode = new System.Windows.Forms.Button();
             this.button13 = new System.Windows.Forms.Button();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
+            this.Algoritma = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Düğüm = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Yol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Süre = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Maliyet = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
             // 
             this.pictureBox1.Location = new System.Drawing.Point(242, 12);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(789, 583);
+            this.pictureBox1.Size = new System.Drawing.Size(705, 613);
             this.pictureBox1.TabIndex = 7;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
@@ -285,9 +292,61 @@
             this.button13.UseVisualStyleBackColor = true;
             this.button13.Click += new System.EventHandler(this.btnSearchNode_Click);
             // 
+            // dgvResults
+            // 
+            this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvResults.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Algoritma,
+            this.Düğüm,
+            this.Yol,
+            this.Süre,
+            this.Maliyet});
+            this.dgvResults.Location = new System.Drawing.Point(953, 12);
+            this.dgvResults.Name = "dgvResults";
+            this.dgvResults.RowHeadersWidth = 51;
+            this.dgvResults.RowTemplate.Height = 24;
+            this.dgvResults.Size = new System.Drawing.Size(402, 535);
+            this.dgvResults.TabIndex = 23;
+            // 
+            // Algoritma
+            // 
+            this.Algoritma.HeaderText = "Algoritma Adı";
+            this.Algoritma.MinimumWidth = 6;
+            this.Algoritma.Name = "Algoritma";
+            this.Algoritma.Width = 125;
+            // 
+            // Düğüm
+            // 
+            this.Düğüm.HeaderText = "Düğüm Sayısı";
+            this.Düğüm.MinimumWidth = 6;
+            this.Düğüm.Name = "Düğüm";
+            this.Düğüm.Width = 125;
+            // 
+            // Yol
+            // 
+            this.Yol.HeaderText = "İzlenen Yol";
+            this.Yol.MinimumWidth = 6;
+            this.Yol.Name = "Yol";
+            this.Yol.Width = 125;
+            // 
+            // Süre
+            // 
+            this.Süre.HeaderText = "Süre";
+            this.Süre.MinimumWidth = 6;
+            this.Süre.Name = "Süre";
+            this.Süre.Width = 125;
+            // 
+            // Maliyet
+            // 
+            this.Maliyet.HeaderText = "Toplam Maliyet";
+            this.Maliyet.MinimumWidth = 6;
+            this.Maliyet.Name = "Maliyet";
+            this.Maliyet.Width = 125;
+            // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(1297, 658);
+            this.ClientSize = new System.Drawing.Size(1360, 658);
+            this.Controls.Add(this.dgvResults);
             this.Controls.Add(this.button13);
             this.Controls.Add(this.buttonUpdateNode);
             this.Controls.Add(this.numAktiflik);
@@ -317,6 +376,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -346,5 +406,11 @@
         private System.Windows.Forms.NumericUpDown numAktiflik;
         private System.Windows.Forms.Button buttonUpdateNode;
         private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.DataGridView dgvResults;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Algoritma;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Düğüm;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Yol;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Süre;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Maliyet;
     }
 }

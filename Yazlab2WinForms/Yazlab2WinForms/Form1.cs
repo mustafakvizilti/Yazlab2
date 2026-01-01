@@ -280,7 +280,7 @@ namespace Yazlab2WinForms
             pictureBox1.Invalidate();
         }
 
-        // En kısa yol
+        // Dijkstra
         private void btnShortestPath_Click(object sender, EventArgs e)
         {
            
@@ -293,9 +293,9 @@ namespace Yazlab2WinForms
                 return;
             }
 
-            // Algoritma çalıştırılıyor
+            
             Algorithm alg = new Algorithm();
-            var allPaths = alg.FindShortestPaths(graph, start, end); // Algoritmayı bu nesne üzerinden çalıştırıyoruz
+            var allPaths = alg.FindShortestPaths(graph, start, end); 
 
             if (allPaths.Count == 0 || (allPaths.Count == 1 && allPaths[0].Count == 1 && allPaths[0][0] != start))
             {
@@ -304,23 +304,23 @@ namespace Yazlab2WinForms
             }
             else
             {
-                // Bütün yolları metin olarak birleştirelim
+                
                 List<string> pathStrings = new List<string>();
 
                 for (int i = 0; i < allPaths.Count; i++)
                 {
-                    // Örn: "Yol 1: Ahmet → Ali → Veli"
+                    
                     string pathText = $"Yol {i + 1}: " + string.Join(" → ", allPaths[i].Select(n => n.Name));
                     pathStrings.Add(pathText);
                 }
 
-                // Bütün yolları alt alta birleştir
+                
                 string finalReport = string.Join("\n", pathStrings);
 
                 if (allPaths.Count > 1)
                 {
                     lblInfo.Text = $"Eşit maliyette {allPaths.Count} yol bulundu. Detaylar mesaj kutusunda.";
-                    // Büyük bir pencerede bütün seçenekleri göster
+                    
                     MessageBox.Show($"Bulunan En Kısa Sosyal Yollar:\n\n{finalReport}", "Alternatif Yollar");
                 }
                 else
@@ -328,15 +328,15 @@ namespace Yazlab2WinForms
                     lblInfo.Text = "En iyi yol: " + string.Join(" → ", allPaths[0].Select(n => n.Name));
                 }
 
-                // Görsel hepsini parlatıyoruz
+                
                 if (allPaths.Count > 0)
                 {
-                    // Sadece ilkini değil, hepsini gönderiyoruz
                     pathToHighlight = allPaths;
-                }
-                else
-                {
-                    pathToHighlight = null;
+                    foreach (var yol in allPaths)
+                    {
+                        AddResultToTable("Dijkstra", yol, 0); 
+                    }
+                    pictureBox1.Invalidate();
                 }
                 pictureBox1.Invalidate();
             }
@@ -350,13 +350,11 @@ namespace Yazlab2WinForms
 
             if (nodeToDelete != null)
             {
-                // 1. Düğümü sil
+                
                 graph.Nodes.Remove(nodeToDelete);
 
-                // 2. Bu düğüme bağlı tüm kenarları (bağlantıları) temizle
                 graph.Edges.RemoveAll(edge => edge.From == nodeToDelete || edge.To == nodeToDelete);
 
-                // 3. Görseli ve pozisyonları güncelle
                 UpdateNodePositions();
                 pictureBox1.Invalidate();
                 lblInfo.Text = $"Düğüm ve ilgili bağlantılar silindi: {nodeName}";
@@ -713,5 +711,21 @@ namespace Yazlab2WinForms
                 MessageBox.Show("Aranan isimde bir düğüm mevcut değil.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+        private void AddResultToTable(string algorithmName, List<Node> path, double elapsedMs)
+        {
+            if (path == null || path.Count <= 1) return;
+
+            string pathText = string.Join(" -> ", path.Select(n => n.Name));
+            int nodeCount = path.Count;
+
+            double totalCost = 0;
+            Algorithm alg = new Algorithm();
+            for (int i = 0; i < path.Count - 1; i++)
+                totalCost += alg.GetDynamicWeight(path[i], path[i + 1]); // Maliyet: $1 + \sqrt{\Delta A^2 + \Delta I^2 + \Delta B^2}$
+
+            
+            dgvResults.Rows.Add(algorithmName, nodeCount, pathText, elapsedMs.ToString("F2"), totalCost.ToString("F4"));
+        }
+
     }
 }
