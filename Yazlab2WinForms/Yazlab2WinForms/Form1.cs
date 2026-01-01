@@ -17,7 +17,8 @@ namespace Yazlab2WinForms
 
         GraphManager _manager = new GraphManager(); // GraphManager nesnesi
         Graph _currentGraph;
-
+        private Node draggingNode = null; // O an sürüklenen düğüm
+        private Point dragOffset;         // Farenin düğüm içindeki konumu
         private Graph graph = new Graph();
         private List<List<Node>> pathToHighlight = null;
         private Dictionary<string, Color> nodeColors = new Dictionary<string, Color>();
@@ -69,6 +70,41 @@ namespace Yazlab2WinForms
             {
                 SaveGraphToJson(saveFile.FileName);
             }
+        }
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Tıklanan noktada bir düğüm var mı kontrol et
+            foreach (var node in graph.Nodes)
+            {
+                // Düğümler 50x50 boyutunda çiziliyor
+                Rectangle nodeRect = new Rectangle(node.Position.X, node.Position.Y, 50, 50);
+
+                if (nodeRect.Contains(e.Location))
+                {
+                    draggingNode = node;
+                    // Tıklanan nokta ile düğümün sol üst köşesi arasındaki farkı kaydet
+                    dragOffset = new Point(e.X - node.Position.X, e.Y - node.Position.Y);
+                    break;
+                }
+            }
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (draggingNode != null)
+            {
+                // Düğümün yeni konumunu fareye göre güncelle
+                draggingNode.Position = new Point(e.X - dragOffset.X, e.Y - dragOffset.Y);
+
+                // Çizimi anlık olarak yenile
+                pictureBox1.Invalidate();
+            }
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            // Sürükleme işlemini bitir
+            draggingNode = null;
         }
         private void btnLoad_Click(object sender, EventArgs e)
         {
@@ -640,6 +676,42 @@ namespace Yazlab2WinForms
         private void lblInfo_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnSearchNode_Click(object sender, EventArgs e)
+        {
+            string searchName = txtNodeName.Text.Trim();
+
+            if (string.IsNullOrEmpty(searchName))
+            {
+                MessageBox.Show("Lütfen aranacak bir düğüm adı girin.");
+                return;
+            }
+
+            // Mevcut tüm renkleri temizle (isteğe bağlı, her aramada sıfırlamak için)
+            nodeColors.Clear();
+
+            // Düğümü bul
+            var foundNode = graph.Nodes.FirstOrDefault(n => n.Name.Equals(searchName, StringComparison.OrdinalIgnoreCase));
+
+            if (foundNode != null)
+            {
+                // Bulunan düğümü vurgula (Örn: Sarı renk)
+                nodeColors[foundNode.Name] = Color.Yellow;
+
+                lblInfo.Text = $"Düğüm bulundu: {foundNode.Name} (Aktiflik: {foundNode.Aktiflik})";
+
+                // Görseli güncelle
+                pictureBox1.Invalidate();
+
+                MessageBox.Show($"'{foundNode.Name}' isimli düğüm bulundu ve vurgulandı.", "Arama Başarılı");
+            }
+            else
+            {
+                lblInfo.Text = "Düğüm bulunamadı.";
+                pictureBox1.Invalidate();
+                MessageBox.Show("Aranan isimde bir düğüm mevcut değil.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
     }
 }

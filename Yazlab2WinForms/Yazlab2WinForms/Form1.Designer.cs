@@ -17,13 +17,13 @@
 
         private void InitializeComponent()
         {
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.txtNodeName = new System.Windows.Forms.TextBox();
             this.txtSource = new System.Windows.Forms.TextBox();
             this.txtTarget = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.lblInfo = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.cmbRelType = new System.Windows.Forms.ComboBox();
@@ -38,10 +38,25 @@
             this.button12 = new System.Windows.Forms.Button();
             this.numAktiflik = new System.Windows.Forms.NumericUpDown();
             this.buttonUpdateNode = new System.Windows.Forms.Button();
+            this.button13 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).BeginInit();
             this.SuspendLayout();
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(242, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(789, 583);
+            this.pictureBox1.TabIndex = 7;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
             // 
             // txtNodeName
             // 
@@ -96,17 +111,6 @@
             this.lblInfo.TabIndex = 6;
             this.lblInfo.Text = "Bilgi bekleniyor..";
             this.lblInfo.Click += new System.EventHandler(this.lblInfo_Click);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(242, 12);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(557, 426);
-            this.pictureBox1.TabIndex = 7;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
-            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
-            this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
             // 
             // button3
             // 
@@ -271,9 +275,20 @@
             this.buttonUpdateNode.UseVisualStyleBackColor = true;
             this.buttonUpdateNode.Click += new System.EventHandler(this.buttonUpdateNode_Click);
             // 
+            // button13
+            // 
+            this.button13.Location = new System.Drawing.Point(157, 0);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(75, 23);
+            this.button13.TabIndex = 22;
+            this.button13.Text = "Ara";
+            this.button13.UseVisualStyleBackColor = true;
+            this.button13.Click += new System.EventHandler(this.btnSearchNode_Click);
+            // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1297, 658);
+            this.Controls.Add(this.button13);
             this.Controls.Add(this.buttonUpdateNode);
             this.Controls.Add(this.numAktiflik);
             this.Controls.Add(this.button12);
@@ -330,5 +345,6 @@
         private System.Windows.Forms.Button button12;
         private System.Windows.Forms.NumericUpDown numAktiflik;
         private System.Windows.Forms.Button buttonUpdateNode;
+        private System.Windows.Forms.Button button13;
     }
 }
