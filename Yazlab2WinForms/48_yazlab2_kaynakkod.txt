@@ -1,0 +1,1839 @@
+﻿====================
+DOSYA ADI: Form1.cs
+====================
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using Yazlab2WinForms.Business.Concrete; // Manager
+using Yazlab2WinForms.Models;           // Graph, Node
+using System.Web.Script.Serialization; // JSON için şart 
+using System.IO;
+
+namespace Yazlab2WinForms
+{
+    public partial class Form1 : Form
+    {
+
+        GraphManager _manager = new GraphManager(); 
+        Graph _currentGraph;
+        private Node draggingNode = null; 
+        private Point dragOffset;         
+        private Graph graph = new Graph();
+        private List<List<Node>> pathToHighlight = null;
+        private Dictionary<string, Color> nodeColors = new Dictionary<string, Color>();
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+            
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFile = new SaveFileDialog { Filter = "JSON Dosyası|*.json" };
+            if (saveFile.ShowDialog() == DialogResult.OK)
+            {
+                
+                Yazlab2WinForms.DataAccess.GraphData dataAccess = new Yazlab2WinForms.DataAccess.GraphData();
+                dataAccess.SaveToJson(this.graph, saveFile.FileName);
+                MessageBox.Show("Graf, Aktiflikler ve Matris kaydedildi!");
+            }
+        }
+
+        private void btnLoad_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFile = new OpenFileDialog { Filter = "JSON Dosyası|*.json" };
+            if (openFile.ShowDialog() == DialogResult.OK)
+            {
+                Yazlab2WinForms.DataAccess.GraphData dataAccess = new Yazlab2WinForms.DataAccess.GraphData();
+                Graph loadedGraph = dataAccess.LoadFromJson(openFile.FileName);
+
+                if (loadedGraph != null)
+                {
+                    this.graph = loadedGraph;
+                    nodeColors.Clear();
+                    pictureBox1.Invalidate();
+                    MessageBox.Show("Graf ve Matris başarıyla yüklendi!");
+                }
+            }
+        }
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            foreach (var node in graph.Nodes)
+            {
+                // Düğümler 50x50 boyutunda çiziliyor
+                Rectangle nodeRect = new Rectangle(node.Position.X, node.Position.Y, 50, 50);
+
+                if (nodeRect.Contains(e.Location))
+                {
+                    draggingNode = node;
+                    dragOffset = new Point(e.X - node.Position.X, e.Y - node.Position.Y);
+                    break;
+                }
+            }
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (draggingNode != null)
+            {
+                draggingNode.Position = new Point(e.X - dragOffset.X, e.Y - dragOffset.Y);
+
+                pictureBox1.Invalidate();
+            }
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            draggingNode = null;
+        }
+        
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            cmbRelType.DataSource = Enum.GetValues(typeof(RelationType));
+        }
+
+        // Düğüm ekleme
+        private void btnAddNode_Click(object sender, EventArgs e)
+        {
+            string nodeName = txtNodeName.Text.Trim();
+
+            double girilenAktiflik = (double)numAktiflik.Value;
+
+            if (string.IsNullOrEmpty(nodeName))
+            {
+                int nextNumber = 1;
+                while (graph.Nodes.Any(node => node.Name == nextNumber.ToString()))
+                    nextNumber++;
+                nodeName = nextNumber.ToString();
+            }
+
+            // 2. Düğümü seçilen aktiflik değeriyle oluşturuyoruz
+            Node newNode = new Node(nodeName, new Point(0, 0), girilenAktiflik);
+            graph.AddNode(newNode);
+
+            UpdateNodePositions();
+            lblInfo.Text = $"Düğüm eklendi: {nodeName} (Aktiflik: {girilenAktiflik})";
+            pictureBox1.Invalidate();
+        }
+
+        private void UpdateNodePositions()
+        {
+            int count = graph.Nodes.Count;
+            if (count == 0) return;
+
+            int radius = Math.Min(pictureBox1.Width, pictureBox1.Height) / 2 - 50;
+            Point center = new Point(pictureBox1.Width / 2, pictureBox1.Height / 2);
+
+            for (int i = 0; i < count; i++)
+            {
+                double angle = 2 * Math.PI * i / count;
+                int x = center.X + (int)(radius * Math.Cos(angle)) - 25;
+                int y = center.Y + (int)(radius * Math.Sin(angle)) - 25;
+                graph.Nodes[i].Position = new Point(x, y);
+            }
+        }
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            Point mouseLocation = e.Location; 
+            Node clickedNode = null;
+
+            foreach (var node in graph.Nodes)
+            {
+                Rectangle nodeRect = new Rectangle(node.Position.X, node.Position.Y, 50, 50);
+                if (nodeRect.Contains(mouseLocation))
+                {
+                    clickedNode = node;
+                    break;
+                }
+            }
+
+            if (clickedNode != null)
+            {
+                int connectionCount = graph.Edges.Count(edge => edge.From == clickedNode || edge.To == clickedNode);
+
+                string infoText = $"--- KULLANICI DETAYLARI ---\n" +
+                                  $"Adı: {clickedNode.Name}\n" +
+                                  $"Aktiflik: {clickedNode.Aktiflik}\n" +
+                                  $"Bağlantı Sayısı: {connectionCount}\n" +
+                                  $"İlişki Gücü Toplamı: {clickedNode.IliskiGucu}";
+
+                MessageBox.Show(infoText, "Düğüm Bilgisi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // -----------------------------
+
+                txtNodeName.Text = clickedNode.Name;
+                numAktiflik.Value = (decimal)clickedNode.Aktiflik; //
+
+                lblInfo.Text = $"Seçili: {clickedNode.Name}. Değerleri değiştirip Güncelle'ye basabilirsiniz.";
+            }
+        }
+
+        // Kenar ekleme
+        private void btnAddEdge_Click(object sender, EventArgs e)
+        {
+            if (graph.Nodes.Count == 0)
+            {
+                lblInfo.Text = "Önce düğüm ekleyin!";
+                return;
+            }
+
+            string sourceName = txtSource.Text.Trim();
+            string targetName = txtTarget.Text.Trim();
+
+            List<Node> fromNodes;
+            List<Node> toNodes;
+
+            // Kaynak boşsa tüm düğümler
+            if (string.IsNullOrEmpty(sourceName))
+                fromNodes = new List<Node>(graph.Nodes);
+            else
+            {
+                var n = graph.Nodes.FirstOrDefault(node => node.Name == sourceName);
+                if (n == null)
+                {
+                    lblInfo.Text = "Kaynak düğüm bulunamadı!";
+                    return;
+                }
+                fromNodes = new List<Node> { n };
+            }
+
+            // Hedef boşsa tüm düğümler
+            if (string.IsNullOrEmpty(targetName))
+                toNodes = new List<Node>(graph.Nodes);
+            else
+            {
+                var n = graph.Nodes.FirstOrDefault(node => node.Name == targetName);
+                if (n == null)
+                {
+                    lblInfo.Text = "Hedef düğüm bulunamadı!";
+                    return;
+                }
+                toNodes = new List<Node> { n };
+            }
+
+            int addedEdges = 0;
+
+
+            foreach (var from in fromNodes)
+            {
+                foreach (var to in toNodes)
+                {
+                    if (from == to) continue; // Kendine bağlama yapmasın
+
+                    RelationType secilenTip = (RelationType)cmbRelType.SelectedItem;
+                    int agirlik = (int)numWeight.Value;
+
+                    bool zatenVar = graph.Edges.Any(edge =>
+                        ((edge.From == from && edge.To == to) || (edge.From == to && edge.To == from))
+                        && edge.Type == secilenTip);
+
+                    if (!zatenVar)
+                    {
+                        // 3. Eğer aynı türde bağ yoksa ekle
+                        graph.AddEdge(from, to, secilenTip, agirlik);
+                        addedEdges++;
+                    }
+                }
+            }
+
+            lblInfo.Text = $"{addedEdges} kenar eklendi.";
+            txtSource.Clear();
+            txtTarget.Clear();
+            pictureBox1.Invalidate();
+        }
+
+        // Dijkstra
+        private void btnShortestPath_Click(object sender, EventArgs e)
+        {
+            graph.UpdateNodeStatistics();
+            Node start = graph.Nodes.FirstOrDefault(n => n.Name == txtSource.Text.Trim());
+            Node end = graph.Nodes.FirstOrDefault(n => n.Name == txtTarget.Text.Trim());
+
+            if (start == null || end == null)
+            {
+                lblInfo.Text = "Geçerli düğüm isimleri girin!";
+                return;
+            }
+
+            // --- SÜRE ÖLÇÜMÜ ---
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            Algorithm alg = new Algorithm();
+            var allPaths = alg.FindShortestPaths(graph, start, end); 
+
+            watch.Stop(); //kronometreyi durdur
+            double elapsedMs = watch.Elapsed.TotalMilliseconds;
+
+            if (allPaths != null && allPaths.Count > 0 && allPaths[0].Count > 1)
+            {
+                pathToHighlight = allPaths;
+
+                // birden çok yol varsa hepsini tabloya basar
+                foreach (var tekYol in allPaths)
+                {
+                    AddResultToTable("Dijkstra", tekYol, elapsedMs); // Süreyi buraya gönderiyoruz
+                }
+
+                lblInfo.Text = $"Dijkstra Tamamlandı ({elapsedMs:F4} ms)";
+                pictureBox1.Invalidate();
+            }
+            else
+            {
+                lblInfo.Text = "Yol bulunamadı!";
+                pathToHighlight = null;
+            }
+        }
+        private void btnDeleteNode_Click(object sender, EventArgs e)
+        {
+            string nodeName = txtNodeName.Text.Trim();
+            var nodeToDelete = graph.Nodes.FirstOrDefault(n => n.Name == nodeName);
+
+            if (nodeToDelete != null)
+            {
+                
+                graph.Nodes.Remove(nodeToDelete);
+
+                graph.Edges.RemoveAll(edge => edge.From == nodeToDelete || edge.To == nodeToDelete);
+
+                UpdateNodePositions();
+                pictureBox1.Invalidate();
+                lblInfo.Text = $"Düğüm ve ilgili bağlantılar silindi: {nodeName}";
+            }
+            else
+            {
+                lblInfo.Text = "Silinecek düğüm bulunamadı!";
+            }
+        }
+        private void btnDeleteEdge_Click(object sender, EventArgs e)
+        {
+            string sourceName = txtSource.Text.Trim();
+            string targetName = txtTarget.Text.Trim();
+
+            var sourceNode = graph.Nodes.FirstOrDefault(n => n.Name == sourceName);
+            var targetNode = graph.Nodes.FirstOrDefault(n => n.Name == targetName);
+
+            if (sourceNode == null || targetNode == null)
+            {
+                lblInfo.Text = "Kaynak veya hedef düğüm bulunamadı!";
+                return;
+            }
+
+            // İki düğüm arasındaki tüm bağlantıları sil (yön fark etmeksizin)
+            int removedCount = graph.Edges.RemoveAll(edge =>
+                (edge.From == sourceNode && edge.To == targetNode) ||
+                (edge.From == targetNode && edge.To == sourceNode));
+
+            if (removedCount > 0)
+            {
+                lblInfo.Text = $"{removedCount} adet bağlantı silindi.";
+                pictureBox1.Invalidate();
+            }
+            else
+            {
+                lblInfo.Text = "Belirtilen düğümler arasında bağlantı yok.";
+            }
+        }
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            Dictionary<string, int> edgeCountMap = new Dictionary<string, int>();
+
+            foreach (var edge in graph.Edges)
+            {
+                Color cizgiRengi;
+                switch (edge.Type.ToString().ToLower())
+                {
+                    case "akraba": cizgiRengi = Color.Green; break;
+                    case "arkadas": cizgiRengi = Color.Red; break;
+                    case "is": cizgiRengi = Color.Blue; break;
+                    case "tanidik": cizgiRengi = Color.Orange; break;
+                    default: cizgiRengi = Color.Gray; break;
+                }
+
+                bool isPathEdge = false;
+                int thickness = 2; // Standart kalınlık
+
+                if (pathToHighlight != null)
+                {
+                    foreach (var tekYol in pathToHighlight)
+                    {
+                        for (int i = 0; i < tekYol.Count - 1; i++)
+                        {
+                            if ((edge.From == tekYol[i] && edge.To == tekYol[i + 1]) ||
+                                (edge.To == tekYol[i] && edge.From == tekYol[i + 1]))
+                            {
+                                isPathEdge = true;
+                                thickness = 6;
+                                break;
+                            }
+                        }
+                        if (isPathEdge) break;
+                    }
+                }
+
+                // 3. PARALEL ÇİZGİ HESABI 
+                Point p1 = new Point(edge.From.Position.X + 25, edge.From.Position.Y + 25);
+                Point p2 = new Point(edge.To.Position.X + 25, edge.To.Position.Y + 25);
+
+                int h1 = edge.From.GetHashCode();
+                int h2 = edge.To.GetHashCode();
+                string pairKey = h1 < h2 ? $"{h1}-{h2}" : $"{h2}-{h1}";
+
+                if (!edgeCountMap.ContainsKey(pairKey)) edgeCountMap[pairKey] = 0;
+                int index = edgeCountMap[pairKey]++;
+
+                float dx = p2.X - p1.X;
+                float dy = p2.Y - p1.Y;
+                float length = (float)Math.Sqrt(dx * dx + dy * dy);
+
+                float offset = (index == 0) ? 0 : (index % 2 == 0 ? (index / 2) * 12 : -(index / 2 + 1) * 12);
+                float offsetX = length > 0 ? -dy / length * offset : 0;
+                float offsetY = length > 0 ? dx / length * offset : 0;
+
+                // 4. ÇİZİM
+                using (Pen pen = new Pen(cizgiRengi, thickness))
+                {
+                    g.DrawLine(pen, p1.X + offsetX, p1.Y + offsetY, p2.X + offsetX, p2.Y + offsetY);
+                }
+            }
+
+            foreach (var node in graph.Nodes)
+            {
+                Brush nodeBrush = nodeColors.ContainsKey(node.Name) ?
+                                  new SolidBrush(nodeColors[node.Name]) : Brushes.White;
+
+                g.FillEllipse(nodeBrush, node.Position.X, node.Position.Y, 50, 50);
+                g.DrawEllipse(Pens.Black, node.Position.X, node.Position.Y, 50, 50);
+
+                StringFormat sf = new StringFormat { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
+                g.DrawString(node.Name, this.Font, Brushes.Black, new RectangleF(node.Position.X, node.Position.Y, 50, 50), sf);
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)  // En popüler kişiyi bul
+        {
+            if (graph.Nodes.Count == 0)
+            {
+                MessageBox.Show("Önce ekrana düğüm ekle!");
+                return;
+            }
+
+            List<Node> sampiyonlar = _manager.EnPopulerleriBul(graph);
+
+            if (sampiyonlar.Count > 0)
+            {
+                string isimler = string.Join(", ", sampiyonlar.Select(n => n.Name));
+
+                int baglantiSayisi = graph.Edges.Count(edge => edge.From == sampiyonlar[0] || edge.To == sampiyonlar[0]);
+
+                MessageBox.Show($"En Güçlü Düğümler ({baglantiSayisi} Bağlantı):\n{isimler}", "Analiz Sonucu");
+            }
+            else
+            {
+                MessageBox.Show("Henüz hiç bağlantı (çizgi) yok.");
+            }
+        }
+
+
+        private void btnBFS_Click(object sender, EventArgs e)
+        {
+            // Kaynak kutusundaki ismi bul
+            Node startNode = graph.Nodes.FirstOrDefault(n => n.Name == txtSource.Text.Trim());
+
+            if (startNode == null)
+            {
+                MessageBox.Show("Lütfen 'Kaynak' kutusuna geçerli bir düğüm adı girin!");
+                return;
+            }
+
+            // Algorithm sınıfını çağır 
+            Algorithm alg = new Algorithm();
+            List<Node> reachable = alg.GetReachableNodesBFS(graph, startNode);
+
+            string result = string.Join(", ", reachable.Select(n => n.Name));
+            MessageBox.Show($"BFS ile Erişilebilen Kullanıcılar:\n{result}", "BFS Analizi");
+        }
+
+        private void btnDFS_Click(object sender, EventArgs e)
+        {
+            Node startNode = graph.Nodes.FirstOrDefault(n => n.Name == txtSource.Text.Trim());
+
+            if (startNode == null)
+            {
+                MessageBox.Show("Lütfen 'Kaynak' kutusuna geçerli bir düğüm adı girin!");
+                return;
+            }
+
+            Algorithm alg = new Algorithm();
+            List<Node> reachable = new List<Node>();
+
+            alg.GetReachableNodesDFS(graph, startNode, reachable);
+
+            string result = string.Join(", ", reachable.Select(n => n.Name));
+            MessageBox.Show($"DFS ile Erişilebilen Kullanıcılar:\n{result}", "DFS Analizi");
+        }
+
+        private void button5_Click(object sender, EventArgs e) // Top5Node Butonu
+        {
+            if (graph.Nodes.Count == 0) return;
+
+            var top5 = _manager.GetTop5Influencers(graph);
+
+            string tableHeader = string.Format("{0,-15} | {1,-10}\n", "Kullanıcı", "Bağlantı");
+            string separator = new string('-', 30) + "\n";
+            string tableRows = "";
+
+            foreach (var item in top5)
+            {
+                tableRows += string.Format("{0,-15} | {1,-10}\n", item.NodeName, item.Degree);
+            }
+
+            MessageBox.Show(tableHeader + separator + tableRows, "En Yüksek Dereceli 5 Düğüm");
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnColoring_Click(object sender, EventArgs e)
+        {
+            Coloring coloring = new Coloring();
+            nodeColors = coloring.ApplyWelshPowell(graph);
+            pictureBox1.Invalidate();
+        }
+
+        private void buttonUpdateNode_Click(object sender, EventArgs e)
+        {
+            string nodeName = txtNodeName.Text.Trim();
+
+            var targetNode = graph.Nodes.FirstOrDefault(n => n.Name == nodeName);
+
+            if (targetNode != null)
+            {
+                double yeniAktiflik = (double)numAktiflik.Value;
+                targetNode.Aktiflik = yeniAktiflik; //
+
+                lblInfo.Text = $"{targetNode.Name} düğümü güncellendi. Yeni Aktiflik: {yeniAktiflik}";
+                pictureBox1.Invalidate(); 
+
+                MessageBox.Show($"{targetNode.Name} başarıyla güncellendi!", "Güncelleme Başarılı");
+            }
+            else
+            {
+                MessageBox.Show("Listede bu isimde bir düğüm bulunamadı. Lütfen önce graf üzerinden bir düğüm seçin.");
+            }
+        }
+
+        private void lblInfo_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnSearchNode_Click(object sender, EventArgs e)
+        {
+            string searchName = txtNodeName.Text.Trim();
+
+            if (string.IsNullOrEmpty(searchName))
+            {
+                MessageBox.Show("Lütfen aranacak bir düğüm adı girin.");
+                return;
+            }
+
+            nodeColors.Clear();
+
+            // Arama işlemi
+            var foundNode = graph.Nodes.FirstOrDefault(n => n.Name.Equals(searchName, StringComparison.OrdinalIgnoreCase));
+
+            if (foundNode != null)
+            {
+                nodeColors[foundNode.Name] = Color.Yellow;
+
+                lblInfo.Text = $"Düğüm bulundu: {foundNode.Name} (Aktiflik: {foundNode.Aktiflik})";
+
+                // Görseli güncelle
+                pictureBox1.Invalidate();
+
+                MessageBox.Show($"'{foundNode.Name}' isimli düğüm bulundu ve vurgulandı.", "Arama Başarılı");
+            }
+            else
+            {
+                lblInfo.Text = "Düğüm bulunamadı.";
+                pictureBox1.Invalidate();
+                MessageBox.Show("Aranan isimde bir düğüm mevcut değil.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void AddResultToTable(string algorithmName, List<Node> path, double elapsedMs)
+        {
+            if (path == null || path.Count <= 1) return;
+
+            string pathText = string.Join(" -> ", path.Select(n => n.Name));
+            int nodeCount = path.Count;
+
+            double totalCost = 0;
+            Algorithm alg = new Algorithm();
+            for (int i = 0; i < path.Count - 1; i++)
+                totalCost += alg.GetDynamicWeight(path[i], path[i + 1]);
+
+            dgvResults.Rows.Add(
+                algorithmName,
+                nodeCount,
+                pathText,
+                elapsedMs.ToString("F4"),
+                totalCost.ToString("F4")
+            );
+        }
+
+        private void buttonAStar_Click(object sender, EventArgs e)
+        {
+            graph.UpdateNodeStatistics();
+            Node start = graph.Nodes.FirstOrDefault(n => n.Name == txtSource.Text.Trim());
+            Node end = graph.Nodes.FirstOrDefault(n => n.Name == txtTarget.Text.Trim());
+
+            if (start == null || end == null) return;
+
+            // Süre ölçümü başlatılıyor
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            Algorithm alg = new Algorithm();
+            //A* metodunu çağırıyoruz
+            var path = alg.FindShortestPathAStar(graph, start, end);
+
+            watch.Stop();
+            double elapsedMs = watch.Elapsed.TotalMilliseconds;
+
+            if (path != null && path.Count > 1)
+            {
+                pathToHighlight = new List<List<Node>> { path };
+
+                AddResultToTable("A-Star (A*)", path, elapsedMs);
+
+                pictureBox1.Invalidate();
+            }
+            else
+            {
+                lblInfo.Text = "A* ile yol bulunamadı!";
+            }
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Form1.Designer.cs
+====================
+namespace Yazlab2WinForms
+{
+    partial class Form1
+    {
+        private System.ComponentModel.IContainer components = null;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        private void InitializeComponent()
+        {
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.txtNodeName = new System.Windows.Forms.TextBox();
+            this.txtSource = new System.Windows.Forms.TextBox();
+            this.txtTarget = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.lblInfo = new System.Windows.Forms.Label();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
+            this.cmbRelType = new System.Windows.Forms.ComboBox();
+            this.numWeight = new System.Windows.Forms.NumericUpDown();
+            this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
+            this.button7 = new System.Windows.Forms.Button();
+            this.button8 = new System.Windows.Forms.Button();
+            this.button9 = new System.Windows.Forms.Button();
+            this.button10 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
+            this.button12 = new System.Windows.Forms.Button();
+            this.numAktiflik = new System.Windows.Forms.NumericUpDown();
+            this.buttonUpdateNode = new System.Windows.Forms.Button();
+            this.button13 = new System.Windows.Forms.Button();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
+            this.Algoritma = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Düğüm = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Yol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Süre = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Maliyet = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.buttonAStar = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numWeight)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(242, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(705, 613);
+            this.pictureBox1.TabIndex = 7;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
+            // 
+            // txtNodeName
+            // 
+            this.txtNodeName.Location = new System.Drawing.Point(0, 0);
+            this.txtNodeName.Name = "txtNodeName";
+            this.txtNodeName.Size = new System.Drawing.Size(100, 22);
+            this.txtNodeName.TabIndex = 0;
+            this.txtNodeName.Text = "Düğüm adı";
+            // 
+            // txtSource
+            // 
+            this.txtSource.Location = new System.Drawing.Point(97, 0);
+            this.txtSource.Name = "txtSource";
+            this.txtSource.Size = new System.Drawing.Size(54, 22);
+            this.txtSource.TabIndex = 1;
+            this.txtSource.Text = "Kaynak";
+            // 
+            // txtTarget
+            // 
+            this.txtTarget.Location = new System.Drawing.Point(97, 28);
+            this.txtTarget.Name = "txtTarget";
+            this.txtTarget.Size = new System.Drawing.Size(54, 22);
+            this.txtTarget.TabIndex = 2;
+            this.txtTarget.Text = "Hedef";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(-2, 71);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 51);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "Düğüm Ekle";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.btnAddNode_Click);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(-2, 28);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 50);
+            this.button2.TabIndex = 4;
+            this.button2.Text = "Bağlantı Ekle";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.btnAddEdge_Click);
+            // 
+            // lblInfo
+            // 
+            this.lblInfo.AutoSize = true;
+            this.lblInfo.Location = new System.Drawing.Point(12, 203);
+            this.lblInfo.Name = "lblInfo";
+            this.lblInfo.Size = new System.Drawing.Size(105, 16);
+            this.lblInfo.TabIndex = 6;
+            this.lblInfo.Text = "Bilgi bekleniyor..";
+            this.lblInfo.Click += new System.EventHandler(this.lblInfo_Click);
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(120, 247);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(124, 31);
+            this.button3.TabIndex = 8;
+            this.button3.Text = "Dijkstra";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.btnShortestPath_Click);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(120, 307);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(124, 64);
+            this.button4.TabIndex = 9;
+            this.button4.Text = "En Güçlü Düğümü Bul";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // cmbRelType
+            // 
+            this.cmbRelType.FormattingEnabled = true;
+            this.cmbRelType.Location = new System.Drawing.Point(97, 56);
+            this.cmbRelType.Name = "cmbRelType";
+            this.cmbRelType.Size = new System.Drawing.Size(81, 24);
+            this.cmbRelType.TabIndex = 10;
+            // 
+            // numWeight
+            // 
+            this.numWeight.Location = new System.Drawing.Point(97, 86);
+            this.numWeight.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numWeight.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numWeight.Name = "numWeight";
+            this.numWeight.Size = new System.Drawing.Size(41, 22);
+            this.numWeight.TabIndex = 11;
+            this.numWeight.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(120, 276);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(124, 35);
+            this.button5.TabIndex = 12;
+            this.button5.Text = "Top5Node";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(0, 307);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(124, 34);
+            this.button6.TabIndex = 13;
+            this.button6.Text = "Düğüm Sil";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.btnDeleteNode_Click);
+            // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(-2, 368);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(126, 32);
+            this.button7.TabIndex = 14;
+            this.button7.Text = "Bağlantı Sil";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.btnDeleteEdge_Click);
+            // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(-2, 397);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(126, 32);
+            this.button8.TabIndex = 15;
+            this.button8.Text = "Boya";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.btnColoring_Click);
+            // 
+            // button9
+            // 
+            this.button9.Location = new System.Drawing.Point(-2, 276);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(126, 35);
+            this.button9.TabIndex = 16;
+            this.button9.Text = "Bfs";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.btnBFS_Click);
+            // 
+            // button10
+            // 
+            this.button10.Location = new System.Drawing.Point(0, 247);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(124, 31);
+            this.button10.TabIndex = 17;
+            this.button10.Text = "Dfs";
+            this.button10.UseVisualStyleBackColor = true;
+            this.button10.Click += new System.EventHandler(this.btnDFS_Click);
+            // 
+            // button11
+            // 
+            this.button11.Location = new System.Drawing.Point(120, 368);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(124, 32);
+            this.button11.TabIndex = 18;
+            this.button11.Text = "Kaydet";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.btnSave_Click);
+            // 
+            // button12
+            // 
+            this.button12.Location = new System.Drawing.Point(120, 397);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(124, 32);
+            this.button12.TabIndex = 19;
+            this.button12.Text = "Yükle";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.btnLoad_Click);
+            // 
+            // numAktiflik
+            // 
+            this.numAktiflik.DecimalPlaces = 1;
+            this.numAktiflik.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.numAktiflik.Location = new System.Drawing.Point(97, 114);
+            this.numAktiflik.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numAktiflik.Name = "numAktiflik";
+            this.numAktiflik.Size = new System.Drawing.Size(41, 22);
+            this.numAktiflik.TabIndex = 20;
+            this.numAktiflik.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            // 
+            // buttonUpdateNode
+            // 
+            this.buttonUpdateNode.Location = new System.Drawing.Point(0, 338);
+            this.buttonUpdateNode.Name = "buttonUpdateNode";
+            this.buttonUpdateNode.Size = new System.Drawing.Size(124, 33);
+            this.buttonUpdateNode.TabIndex = 21;
+            this.buttonUpdateNode.Text = "Düğümü Güncelle";
+            this.buttonUpdateNode.UseVisualStyleBackColor = true;
+            this.buttonUpdateNode.Click += new System.EventHandler(this.buttonUpdateNode_Click);
+            // 
+            // button13
+            // 
+            this.button13.Location = new System.Drawing.Point(157, 0);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(75, 23);
+            this.button13.TabIndex = 22;
+            this.button13.Text = "Ara";
+            this.button13.UseVisualStyleBackColor = true;
+            this.button13.Click += new System.EventHandler(this.btnSearchNode_Click);
+            // 
+            // dgvResults
+            // 
+            this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvResults.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Algoritma,
+            this.Düğüm,
+            this.Yol,
+            this.Süre,
+            this.Maliyet});
+            this.dgvResults.Location = new System.Drawing.Point(953, 12);
+            this.dgvResults.Name = "dgvResults";
+            this.dgvResults.RowHeadersWidth = 51;
+            this.dgvResults.RowTemplate.Height = 24;
+            this.dgvResults.Size = new System.Drawing.Size(402, 535);
+            this.dgvResults.TabIndex = 23;
+            // 
+            // Algoritma
+            // 
+            this.Algoritma.HeaderText = "Algoritma Adı";
+            this.Algoritma.MinimumWidth = 6;
+            this.Algoritma.Name = "Algoritma";
+            this.Algoritma.Width = 125;
+            // 
+            // Düğüm
+            // 
+            this.Düğüm.HeaderText = "Düğüm Sayısı";
+            this.Düğüm.MinimumWidth = 6;
+            this.Düğüm.Name = "Düğüm";
+            this.Düğüm.Width = 125;
+            // 
+            // Yol
+            // 
+            this.Yol.HeaderText = "İzlenen Yol";
+            this.Yol.MinimumWidth = 6;
+            this.Yol.Name = "Yol";
+            this.Yol.Width = 125;
+            // 
+            // Süre
+            // 
+            this.Süre.HeaderText = "Süre";
+            this.Süre.MinimumWidth = 6;
+            this.Süre.Name = "Süre";
+            this.Süre.Width = 125;
+            // 
+            // Maliyet
+            // 
+            this.Maliyet.HeaderText = "Toplam Maliyet";
+            this.Maliyet.MinimumWidth = 6;
+            this.Maliyet.Name = "Maliyet";
+            this.Maliyet.Width = 125;
+            // 
+            // buttonAStar
+            // 
+            this.buttonAStar.Location = new System.Drawing.Point(120, 221);
+            this.buttonAStar.Name = "buttonAStar";
+            this.buttonAStar.Size = new System.Drawing.Size(124, 30);
+            this.buttonAStar.TabIndex = 24;
+            this.buttonAStar.Text = "A*";
+            this.buttonAStar.UseVisualStyleBackColor = true;
+            this.buttonAStar.Click += new System.EventHandler(this.buttonAStar_Click);
+            // 
+            // Form1
+            // 
+            this.ClientSize = new System.Drawing.Size(1360, 658);
+            this.Controls.Add(this.buttonAStar);
+            this.Controls.Add(this.dgvResults);
+            this.Controls.Add(this.button13);
+            this.Controls.Add(this.buttonUpdateNode);
+            this.Controls.Add(this.numAktiflik);
+            this.Controls.Add(this.button12);
+            this.Controls.Add(this.button11);
+            this.Controls.Add(this.button10);
+            this.Controls.Add(this.button9);
+            this.Controls.Add(this.button8);
+            this.Controls.Add(this.button7);
+            this.Controls.Add(this.button6);
+            this.Controls.Add(this.button5);
+            this.Controls.Add(this.numWeight);
+            this.Controls.Add(this.cmbRelType);
+            this.Controls.Add(this.button4);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.lblInfo);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.txtTarget);
+            this.Controls.Add(this.txtSource);
+            this.Controls.Add(this.txtNodeName);
+            this.Name = "Form1";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.Text = "Graf Çizim Uygulaması";
+            this.Load += new System.EventHandler(this.Form1_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numWeight)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numAktiflik)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.Label lblInfo;
+        private System.Windows.Forms.TextBox txtNodeName;
+        private System.Windows.Forms.TextBox txtSource;
+        private System.Windows.Forms.TextBox txtTarget;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.ComboBox cmbRelType;
+        private System.Windows.Forms.NumericUpDown numWeight;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.NumericUpDown numAktiflik;
+        private System.Windows.Forms.Button buttonUpdateNode;
+        private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.DataGridView dgvResults;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Algoritma;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Düğüm;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Yol;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Süre;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Maliyet;
+        private System.Windows.Forms.Button buttonAStar;
+    }
+}
+
+
+====================
+DOSYA ADI: Program.cs
+====================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Yazlab2WinForms
+{
+    internal static class Program
+    {
+        /// <summary>
+        /// Uygulamanın ana girdi noktası.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: IAlgorithmService.cs
+====================
+using System.Collections.Generic;
+using Yazlab2WinForms.Models;
+
+namespace Yazlab2WinForms.Abstract
+{
+    public interface IAlgorithmService
+    {
+        // Dinamik ağırlık hesaplama
+        double GetDynamicWeight(Node i, Node j);
+
+        // En kısa yol algoritmaları
+        List<List<Node>> FindShortestPaths(Graph graph, Node start, Node end); // Dijkstra
+        List<Node> FindShortestPathAStar(Graph graph, Node start, Node end);   // A*
+
+        // Arama algoritmaları
+        List<Node> GetReachableNodesBFS(Graph graph, Node startNode);
+        void GetReachableNodesDFS(Graph graph, Node current, List<Node> visited);
+    }
+}
+
+
+====================
+DOSYA ADI: IColoringService.cs
+====================
+using System.Collections.Generic;
+using System.Drawing;
+using Yazlab2WinForms.Models;
+
+namespace Yazlab2WinForms.Abstract
+{
+    public interface IColoringService
+    {
+        // Welsh-Powell renklendirme
+        Dictionary<string, Color> ApplyWelshPowell(Graph graph);
+    }
+}
+
+
+====================
+DOSYA ADI: IGraphService.cs
+====================
+using System.Collections.Generic;
+using Yazlab2WinForms.Models;
+
+namespace Yazlab2WinForms.Abstract
+{
+    public interface IGraphService
+    {
+        // Popülerlik ve Merkezilik Analizleri
+        List<Node> EnPopulerleriBul(Graph graph);
+        List<dynamic> GetTop5Influencers(Graph graph);
+    }
+}
+
+
+====================
+DOSYA ADI: GraphManager.cs
+====================
+using System.Collections.Generic; // List için şart
+using System.Linq; // Count, Where için şart
+using Yazlab2WinForms.DataAccess;
+using Yazlab2WinForms.Models;
+using Yazlab2WinForms.Abstract;
+
+namespace Yazlab2WinForms.Business.Concrete
+{
+    public class GraphManager : IGraphService
+    {
+        private GraphData _graphData;
+
+        public GraphManager()
+        {
+            _graphData = new GraphData();
+        }
+
+        public Graph GetGraphVerisi()
+        {
+            return _graphData.GetGraph();
+        }
+
+        
+        public List<Node> EnPopulerleriBul(Graph graph)
+        {
+            if (graph == null || graph.Nodes.Count == 0)
+                return new List<Node>();
+
+            
+            var skorlar = new Dictionary<Node, int>();
+            int maxBaglanti = 0;
+
+            foreach (var node in graph.Nodes)
+            {
+                
+                int sayi = graph.Edges.Count(e => e.From == node || e.To == node);
+                skorlar[node] = sayi;
+
+               
+                if (sayi > maxBaglanti) maxBaglanti = sayi;
+            }
+
+           
+
+            List<Node> kazananlar = graph.Nodes.Where(n => skorlar[n] == maxBaglanti).ToList();
+
+            return kazananlar;
+        }
+
+        public List<dynamic> GetTop5Influencers(Graph graph)
+        {
+            return graph.Nodes.Select(node => new
+            {
+                NodeName = node.Name,
+                Degree = graph.Edges.Count(e => e.From == node || e.To == node)
+            })
+            .OrderByDescending(x => x.Degree)
+            .Take(5).Cast<dynamic>().ToList();
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: GraphData.cs
+====================
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Web.Script.Serialization;
+using Yazlab2WinForms.Models;
+
+namespace Yazlab2WinForms.DataAccess
+{
+    public class GraphData
+    {
+        private JavaScriptSerializer _serializer = new JavaScriptSerializer();
+
+        // KAYDETME METODU
+        public void SaveToJson(Graph graph, string filePath)
+        {
+            var dataToSave = new
+            {
+                Nodes = graph.Nodes.Select(n => new { n.Name, X = n.Position.X, Y = n.Position.Y, n.Aktiflik }).ToList(),
+                Edges = graph.Edges.Select(e => new {
+                    From = e.From.Name,
+                    To = e.To.Name,
+                    Type = e.Type.ToString(),
+                    e.Weight
+                }).ToList(),
+                AdjacencyMatrix = graph.GetAdjacencyMatrix()
+            };
+
+            string json = _serializer.Serialize(dataToSave);
+            File.WriteAllText(filePath, json);
+        }
+
+        // YÜKLEME METODU
+        public Graph LoadFromJson(string filePath)
+        {
+            if (!File.Exists(filePath)) return null;
+
+            string json = File.ReadAllText(filePath);
+            dynamic data = _serializer.Deserialize<dynamic>(json);
+
+            Graph newGraph = new Graph();
+
+            // 1. Düğümleri oluştur
+            foreach (var n in data["Nodes"])
+            {
+                string name = n["Name"].ToString();
+                int x = Convert.ToInt32(n["X"]);
+                int y = Convert.ToInt32(n["Y"]);
+                double aktif = n.ContainsKey("Aktiflik") ? Convert.ToDouble(n["Aktiflik"]) : 0.5;
+
+                Node newNode = new Node(name, new Point(x, y), aktif);
+                newGraph.AddNode(newNode);
+            }
+
+            // 2. Kenarları oluştur
+            foreach (var e in data["Edges"])
+            {
+                Node fromNode = newGraph.Nodes.FirstOrDefault(n => n.Name == e["From"].ToString());
+                Node toNode = newGraph.Nodes.FirstOrDefault(n => n.Name == e["To"].ToString());
+
+                if (fromNode != null && toNode != null)
+                {
+                    RelationType rType = (RelationType)Enum.Parse(typeof(RelationType), e["Type"].ToString());
+                    int weight = Convert.ToInt32(e["Weight"]);
+                    newGraph.AddEdge(fromNode, toNode, rType, weight); 
+                }
+            }
+
+            return newGraph;
+        }
+        public Graph GetGraph() 
+        {
+            return new Graph(); 
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Algorithm.cs
+====================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Yazlab2WinForms.Abstract;
+
+namespace Yazlab2WinForms.Models
+{
+    public class Algorithm : IAlgorithmService
+    {
+        
+        public double GetDynamicWeight(Node i, Node j)
+        {
+            double dA = Math.Pow(i.Aktiflik - j.Aktiflik, 2);
+            double dI = Math.Pow(i.IliskiGucu - j.IliskiGucu, 2);
+            double dB = Math.Pow(i.BaglantiSayisi - j.BaglantiSayisi, 2);
+
+            
+            return 1 + Math.Sqrt(dA + dI + dB);
+        }
+
+        public List<List<Node>> FindShortestPaths(Graph graph, Node start, Node end)
+        {
+            var distances = new Dictionary<Node, double>();
+            var parents = new Dictionary<Node, List<Node>>();
+
+            foreach (var n in graph.Nodes) { distances[n] = double.MaxValue; parents[n] = new List<Node>(); }
+            distances[start] = 0;
+            var queue = new List<Node>(graph.Nodes);
+
+            while (queue.Any())
+            {
+                var u = queue.OrderBy(n => distances[n]).First();
+                queue.Remove(u);
+                if (u == end) break;
+
+                var neighbors = graph.Edges.Where(e => e.From == u || e.To == u)
+                                           .Select(e => e.From == u ? e.To : e.From).Distinct();
+
+                foreach (var v in neighbors)
+                {
+                    
+                    double weight = GetDynamicWeight(u, v);
+                    double alt = distances[u] + weight;
+
+                    if (alt < distances[v] - 0.001)
+                    {
+                        distances[v] = alt;
+                        parents[v] = new List<Node> { u };
+                    }
+                    else if (Math.Abs(alt - distances[v]) < 0.001)
+                    {
+                        parents[v].Add(u);
+                    }
+                }
+            }
+            return Reconstruct(end, parents);
+        }
+
+        private List<List<Node>> Reconstruct(Node n, Dictionary<Node, List<Node>> p)
+        {
+            if (!p.ContainsKey(n) || !p[n].Any()) return new List<List<Node>> { new List<Node> { n } };
+            var paths = new List<List<Node>>();
+            foreach (var parent in p[n])
+            {
+                foreach (var path in Reconstruct(parent, p)) { path.Add(n); paths.Add(path); }
+            }
+            return paths;
+        }
+
+        // BFS
+        public List<Node> GetReachableNodesBFS(Graph graph, Node startNode)
+        {
+            List<Node> visited = new List<Node>();
+            Queue<Node> queue = new Queue<Node>();
+
+            queue.Enqueue(startNode);
+            visited.Add(startNode);
+
+            while (queue.Count > 0)
+            {
+                Node current = queue.Dequeue();
+                var neighbors = graph.Edges
+                    .Where(e => e.From == current || e.To == current)
+                    .Select(e => e.From == current ? e.To : e.From);
+
+                foreach (var neighbor in neighbors)
+                {
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+            return visited;
+        }
+
+        // DFS
+        public void GetReachableNodesDFS(Graph graph, Node current, List<Node> visited)
+        {
+            visited.Add(current);
+            var neighbors = graph.Edges
+                .Where(e => e.From == current || e.To == current)
+                .Select(e => e.From == current ? e.To : e.From);
+
+            foreach (var neighbor in neighbors)
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    GetReachableNodesDFS(graph, neighbor, visited);
+                }
+            }
+        }
+
+        // A* (A-Star) Algoritması
+        public List<Node> FindShortestPathAStar(Graph graph, Node start, Node end)
+        {
+            var openSet = new List<Node> { start };
+            var cameFrom = new Dictionary<Node, Node>();
+
+            var gScore = new Dictionary<Node, double>(); 
+            var fScore = new Dictionary<Node, double>();
+
+            foreach (var n in graph.Nodes)
+            {
+                gScore[n] = double.MaxValue;
+                fScore[n] = double.MaxValue;
+            }
+
+            gScore[start] = 0;
+            fScore[start] = GetHeuristic(start, end);
+
+            while (openSet.Any())
+            {
+                
+                var current = openSet.OrderBy(n => fScore[n]).First();
+
+                if (current == end) return ReconstructPath(cameFrom, current);
+
+                openSet.Remove(current);
+
+                var neighbors = graph.Edges
+                    .Where(e => e.From == current || e.To == current)
+                    .Select(e => e.From == current ? e.To : e.From).Distinct();
+
+                foreach (var neighbor in neighbors)
+                {
+                    
+                    double tentativeGScore = gScore[current] + GetDynamicWeight(current, neighbor);
+
+                    if (tentativeGScore < gScore[neighbor])
+                    {
+                        cameFrom[neighbor] = current;
+                        gScore[neighbor] = tentativeGScore;
+                        fScore[neighbor] = gScore[neighbor] + GetHeuristic(neighbor, end);
+
+                        if (!openSet.Contains(neighbor))
+                            openSet.Add(neighbor);
+                    }
+                }
+            }
+            return new List<Node>(); 
+        }
+
+        // Heuristic (Sezgisel) Fonksiyon
+        private double GetHeuristic(Node n1, Node n2)
+        {
+            return Math.Sqrt(Math.Pow(n1.Position.X - n2.Position.X, 2) +
+                             Math.Pow(n1.Position.Y - n2.Position.Y, 2)) / 100.0;
+        }
+
+        private List<Node> ReconstructPath(Dictionary<Node, Node> cameFrom, Node current)
+        {
+            var path = new List<Node> { current };
+            while (cameFrom.ContainsKey(current))
+            {
+                current = cameFrom[current];
+                path.Insert(0, current);
+            }
+            return path;
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Coloring.cs
+====================
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using Yazlab2WinForms.Abstract;
+
+namespace Yazlab2WinForms.Models
+{
+    public class Coloring : IColoringService
+    {
+        // Welsh-Powell graf renklendirme
+        public Dictionary<string, Color> ApplyWelshPowell(Graph graph)
+        {
+            Dictionary<string, Color> nodeColors = new Dictionary<string, Color>();
+            if (graph.Nodes.Count == 0) return nodeColors;
+
+            var sortedNodes = graph.Nodes
+                .Select(n => new {
+                    Node = n,
+                    Degree = graph.Edges.Count(e => e.From == n || e.To == n)
+                })
+                .OrderByDescending(x => x.Degree).ToList();
+
+            List<Color> palette = new List<Color> { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Purple, Color.Orange, Color.Pink, Color.Cyan };
+            int currentColorIndex = 0;
+            var remainingNodes = sortedNodes.Select(x => x.Node).ToList();
+
+            while (remainingNodes.Count > 0)
+            {
+                Color currentColor = palette[currentColorIndex % palette.Count];
+                List<Node> coloredInThisRound = new List<Node>();
+
+                for (int i = 0; i < remainingNodes.Count; i++)
+                {
+                    Node currentNode = remainingNodes[i];
+                    bool hasNeighborWithSameColor = coloredInThisRound.Any(node => IsNeighbor(graph, currentNode, node));
+
+                    if (!hasNeighborWithSameColor)
+                    {
+                        nodeColors[currentNode.Name] = currentColor;
+                        coloredInThisRound.Add(currentNode);
+                    }
+                }
+                remainingNodes.RemoveAll(n => coloredInThisRound.Contains(n));
+                currentColorIndex++;
+            }
+            return nodeColors;
+        }
+
+        private bool IsNeighbor(Graph graph, Node n1, Node n2)
+        {
+            return graph.Edges.Any(e => (e.From == n1 && e.To == n2) || (e.To == n1 && e.From == n2));
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Edge.cs
+====================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Yazlab2WinForms.Models   
+{
+    public enum RelationType { Akraba, Arkadas, Is, Tanidik } // İlişki türleri
+    public class Edge
+    {
+        public Node From { get; set; }
+        public Node To { get; set; }
+
+        public RelationType Type { get; set; }
+        public int Weight { get; set; } // Şiddet 1-10
+
+        public Edge(Node from, Node to, RelationType type, int weight)
+        {
+            From = from;
+            To = to;
+            // İlişki türü ve şiddet ataması
+            Type = type;
+            Weight = weight;
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Graph.cs
+====================
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Yazlab2WinForms.Models
+{
+    public class Graph
+    {
+        public List<Node> Nodes { get; } = new List<Node>();
+        public List<Edge> Edges { get; } = new List<Edge>();
+
+        public void AddNode(Node node)
+        {
+            if (!Nodes.Any(n => n.Name == node.Name))
+                Nodes.Add(node);
+        }
+
+        public void AddEdge(Node from, Node to, RelationType type, int weight)
+        {
+            if (Nodes.Contains(from) && Nodes.Contains(to))
+                Edges.Add(new Edge(from, to, type, weight));
+
+            
+            UpdateNodeStatistics();
+        }
+
+        // --- BAĞLANTI TOPLAMA MANTIĞI ---
+        public void UpdateNodeStatistics()
+        {
+            foreach (var node in Nodes)
+            {             
+                node.IliskiGucu = Edges.Where(e => e.From == node || e.To == node).Sum(e => e.Weight);
+
+                node.BaglantiSayisi = Edges.Count(e => e.From == node || e.To == node);
+            }
+        }
+
+        public int[,] GetAdjacencyMatrix()
+        {
+          
+            int n = Nodes.Count;
+            int[,] matrix = new int[n, n];
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+ 
+                    var edge = Edges.FirstOrDefault(e =>
+                        (e.From == Nodes[i] && e.To == Nodes[j]) ||
+                        (e.To == Nodes[i] && e.From == Nodes[j]));
+
+                    if (edge != null)
+                    {
+                        matrix[i, j] = edge.Weight;
+                    }
+                    else
+                    {
+                        matrix[i, j] = 0;
+                    }
+                }
+            }
+            return matrix;
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Node.cs
+====================
+using System.Drawing;
+
+namespace Yazlab2WinForms.Models
+{
+    public class Node
+    {
+        public string Name { get; set; }
+        public Point Position { get; set; }
+
+        public double Aktiflik { get; set; }    // Özellik I
+        public double IliskiGucu { get; set; }  // Özellik II (Etkileşim )
+        public int BaglantiSayisi { get; set; } // Özellik III
+
+        public Node(string name, Point position, double aktiflik = 0.5)
+        {
+            Name = name;
+            Position = position;
+            Aktiflik = aktiflik;
+            IliskiGucu = 0; // Başlangıçta 0, hesaplamayla dolacak
+            BaglantiSayisi = 0;
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: .NETFramework,Version=v4.8.AssemblyAttributes.cs
+====================
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
+
+
+====================
+DOSYA ADI: .NETFramework,Version=v4.8.AssemblyAttributes.cs
+====================
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
+
+
+====================
+DOSYA ADI: AssemblyInfo.cs
+====================
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// Bir bütünleştirilmiş koda ilişkin Genel Bilgiler aşağıdaki öznitelikler kümesiyle
+// denetlenir. Bütünleştirilmiş kod ile ilişkili bilgileri değiştirmek için
+// bu öznitelik değerlerini değiştirin.
+[assembly: AssemblyTitle("Yazlab2WinForms")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Yazlab2WinForms")]
+[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// ComVisible özniteliğinin false olarak ayarlanması bu bütünleştirilmiş koddaki türleri
+// COM bileşenleri için görünmez yapar. Bu bütünleştirilmiş koddaki bir türe
+// erişmeniz gerekirse ComVisible özniteliğini o türde true olarak ayarlayın.
+[assembly: ComVisible(false)]
+
+// Bu proje COM'un kullanımına sunulursa, aşağıdaki GUID tür kitaplığının kimliği içindir
+[assembly: Guid("bb4abb8a-1026-422c-ae15-4822f1d6ad3b")]
+
+// Bir derlemenin sürüm bilgileri aşağıdaki dört değerden oluşur:
+//
+//      Ana Sürüm
+//      İkincil Sürüm 
+//      Yapı Numarası
+//      Düzeltme
+//
+// Tüm değerleri belirtebilir veya varsayılan Derleme ve Düzeltme Numaralarını kullanmak için
+// aşağıda gösterildiği gibi '*' kullanabilirsiniz:
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+
+
+====================
+DOSYA ADI: Resources.Designer.cs
+====================
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     Bu kod bir araç tarafından oluşturuldu.
+//     Çalışma Zamanı Sürümü: 4.0.30319.42000
+//
+//     Bu dosyada yapılan değişiklikler yanlış davranışa yol açabilir ve şu durumda kaybolur
+//     kod yeniden oluşturulduğunda.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+namespace Yazlab2WinForms.Properties
+{
+
+
+    /// <summary>
+    ///   Yerelleştirilmiş dizeleri vs. aramak için türü kesin belirlenmiş bir kaynak sınıfı.
+    /// </summary>
+    // Bu sınıf, StronglyTypedResourceBuilder tarafından otomatik olarak
+    // ResGen ya da Visual Studio gibi bir araç ile oluşturuldu.
+    // Bir üye eklemek ya da kaldırmak için .ResX dosyanızı düyenleyin, sonra da ResGen
+    // öğesini /str seçeneğiyle yeniden çalıştırın veya VS projenizi yeniden derleyin.
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    internal class Resources
+    {
+
+        private static global::System.Resources.ResourceManager resourceMan;
+
+        private static global::System.Globalization.CultureInfo resourceCulture;
+
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        internal Resources()
+        {
+        }
+
+        /// <summary>
+        ///   Bu sınıf tarafından kullanılan, önbelleğe alınmış ResourceManager örneğini döndürür.
+        /// </summary>
+        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if ((resourceMan == null))
+                {
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Yazlab2WinForms.Properties.Resources", typeof(Resources).Assembly);
+                    resourceMan = temp;
+                }
+                return resourceMan;
+            }
+        }
+
+        /// <summary>
+        ///   Geçerli iş parçacığının CurrentUICulture özelliğini, türü kesin belirlenmiş
+        ///   bu kaynak sınıfını kullanan tüm kaynak aramaları için geçersiz kılar.
+        /// </summary>
+        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
+                return resourceCulture;
+            }
+            set
+            {
+                resourceCulture = value;
+            }
+        }
+    }
+}
+
+
+====================
+DOSYA ADI: Settings.Designer.cs
+====================
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a tool.
+//     Runtime Version:4.0.30319.42000
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+namespace Yazlab2WinForms.Properties
+{
+
+
+    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0")]
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
+    {
+
+        private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
+
+        public static Settings Default
+        {
+            get
+            {
+                return defaultInstance;
+            }
+        }
+    }
+}
+
+
